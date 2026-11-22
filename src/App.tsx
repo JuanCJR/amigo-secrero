@@ -8,6 +8,7 @@ import { api, flag, tokens, type Person, type PubState, type Wish } from './api'
 import { Flip, prefersReduced } from './anim/gsap';
 import { Loading, Pin, RevealScreen, Theirs, Wait, Welcome, Who, WishScreen } from './screens/Participant';
 import { OrganizerApp } from './screens/Organizer';
+import { DemoBar } from './demo/DemoBar';
 
 function MeChip({ me, onClick }: { me: Person; onClick: () => void }) {
   return (
@@ -117,13 +118,24 @@ function ParticipantApp() {
   );
 }
 
+const DEMO = !!import.meta.env.VITE_DEMO;
+const isOrg = () => location.pathname.startsWith('/organizador') || location.hash === '#organizador';
+
 export function App() {
-  const org = location.pathname.startsWith('/organizador');
+  const [org, setOrg] = useState(isOrg());
+  useEffect(() => {
+    const h = () => setOrg(isOrg());
+    window.addEventListener('hashchange', h);
+    return () => window.removeEventListener('hashchange', h);
+  }, []);
   return (
-    <div className="app">
-      <Ambient />
-      <MascotLayer />
-      {org ? <OrganizerApp /> : <ParticipantApp />}
-    </div>
+    <>
+      {DEMO && <DemoBar org={org} onSwitch={(o) => { location.hash = o ? 'organizador' : ''; setOrg(o); }} />}
+      <div className="app">
+        <Ambient />
+        <MascotLayer />
+        {org ? <OrganizerApp key="o" /> : <ParticipantApp key="p" />}
+      </div>
+    </>
   );
 }

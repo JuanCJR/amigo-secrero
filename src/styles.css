@@ -247,3 +247,12 @@ h2, h3, p { margin: 0; }
   .btn { min-height: 60px; font-size: 21px; }
   .screen-foot { padding-top: 8px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
 }
+
+/* ───────── solo demo ───────── */
+:root { color-scheme: dark; }
+.demo-bar { position: relative; z-index: 60; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 4px 10px; background: #0A1511; border-bottom: 1px solid var(--line); }
+.demo-hint { font-size: 11px; font-weight: 700; line-height: 1.25; color: var(--smoke); }
+.demo-btns { display: flex; gap: 6px; flex: none; }
+.demo-btns button { min-height: 36px; padding: 0 8px; border-radius: 10px; border: 1.5px solid var(--line); background: rgba(255,241,214,.07); font-size: 13px; font-weight: 800; }
+.demo-btns button.on { background: var(--ember); color: var(--on-ember); border-color: var(--ember); }
+body.demo .app { height: calc(100svh - 45px); }

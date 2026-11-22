@@ -16,7 +16,7 @@ const useMsg = (first: Msg) => {
   return [m, (t: string, k?: Msg['kind']) => setM(mk(t, k))] as const;
 };
 const A = { as: 'a' as const };
-const link = () => location.origin;
+const link = () => (import.meta.env.VITE_DEMO ? location.href.split('#')[0] : location.origin);
 const wa = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 
 export function OrganizerApp() {
