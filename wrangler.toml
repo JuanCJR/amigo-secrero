@@ -1,0 +1,14 @@
+name = "amigo-secreto"
+main = "server/worker.ts"
+compatibility_date = "2025-06-01"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+[[kv_namespaces]]
+binding = "DATA"
+id = "REEMPLAZAR_CON_ID_DE_KV"
+
+# El secreto se configura con: npx wrangler secret put APP_SECRET
