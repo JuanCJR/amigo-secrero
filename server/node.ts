@@ -3,7 +3,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { readFile } from 'node:fs/promises';
 import { createApp } from './app';
-import { createFileStore } from './store';
+import { createFileStore } from './fileStore';
 
 const port = Number(process.env.PORT || 8787);
 const secret = process.env.APP_SECRET || 'dev-secret-cambiar-en-produccion';

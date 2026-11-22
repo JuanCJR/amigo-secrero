@@ -37,7 +37,8 @@
     "concurrently": "^10.0.7",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^5.4.21"
+    "vite": "^5.4.21",
+    "wrangler": "^4.166.0"
   },
   "private": true,
   "type": "module"
