@@ -9,6 +9,6 @@ run_worker_first = ["/api/*"]
 
 [[kv_namespaces]]
 binding = "DATA"
-id = "REEMPLAZAR_CON_ID_DE_KV"
+id = "4e95d4275ada4efa95c3234727a920a9"
 
 # El secreto se configura con: npx wrangler secret put APP_SECRET
