@@ -1,5 +1,4 @@
-import '@fontsource/bagel-fat-one';
-import '@fontsource-variable/figtree';
+import './fonts/fonts.css';
 import './lib/gsap';
 import './styles.css';
 import { createRoot } from 'react-dom/client';

@@ -230,6 +230,7 @@ export function Reveal({ gid }: { gid: string }) {
     tl.set(q('.ribbon-end'), { opacity: 1, drawSVG: '0% 100%' }, 0.3);
     tl.set(q('.ribbon-v, .ribbon-lid'), { opacity: 0 }, 0.8);
     tl.to(q('.ribbon-end'), { drawSVG: '100% 100%', duration: 0.5, ease: 'power3.out', stagger: 0.05 }, 0.32);
+    tl.set(q('.ribbon-end'), { opacity: 0 }, 0.9);
     tl.to(
       q('.bow'),
       { motionPath: { path: [{ x: 60, y: -120 }, { x: 160, y: -60 }, { x: 240, y: 200 }], curviness: 1.4 }, rotation: 600, svgOrigin: '100 60', duration: 1.1, ease: 'power1.in' },

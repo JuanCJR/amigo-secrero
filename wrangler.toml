@@ -2,11 +2,6 @@ name = "amigo-secreto"
 main = "server/worker.ts"
 compatibility_date = "2025-06-01"
 
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
-
 [[kv_namespaces]]
 binding = "DATA"
 id = "4e95d4275ada4efa95c3234727a920a9"
