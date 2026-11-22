@@ -219,6 +219,16 @@ button {
 .bubble-measure {
   visibility: hidden;
 }
+.bubble-old {
+  position: absolute;
+  inset: 6px 12px;
+  padding: 6px 4px 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bubble-old > div {
+  will-change: transform, opacity;
+}
 .bubble-tail {
   position: absolute;
   left: 0;
@@ -1366,4 +1376,47 @@ button {
   .shimmer::after {
     animation: none;
   }
+}
+
+.sparkles {
+  position: absolute;
+  left: 15%;
+  width: 70%;
+  top: 47%;
+  height: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.sparkles .sp {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  box-shadow: 0 0 8px 2px rgba(255, 193, 94, 0.55);
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+.sparkles .sp-star {
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  box-shadow: none;
+  border-radius: 1px;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.box-glow {
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  top: 30%;
+  height: 30%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255, 210, 120, 0.85) 0%, rgba(255, 138, 61, 0.35) 45%, rgba(255, 138, 61, 0) 72%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
 }

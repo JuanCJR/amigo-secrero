@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { gsap, motion } from '../lib/gsap';
+import { gsap, motion, SplitText } from '../lib/gsap';
 import { useJose } from './JoseProvider';
 
 const CLOUD =
@@ -8,10 +8,11 @@ const SPEECH =
   'M16,4 L184,4 C192,4 196,8 196,16 L196,84 C196,92 192,96 184,96 L16,96 C8,96 4,92 4,84 L4,16 C4,8 8,4 16,4 Z';
 
 export function Bubble() {
-  const { msg, smokeBurst, setTyping, setMood, ctrl } = useJose();
+  const { msg, smokeBurst, setTyping, setMood, ctrl, puff } = useJose();
   const wrap = useRef<HTMLDivElement>(null);
   const shape = useRef<SVGPathElement>(null);
   const textEl = useRef<HTMLSpanElement>(null);
+  const oldEl = useRef<HTMLSpanElement>(null);
   const tailRef = useRef<HTMLDivElement>(null);
   const typer = useRef<gsap.core.Tween | null>(null);
   const shown = useRef(false);
@@ -43,6 +44,7 @@ export function Bubble() {
 
     // aparición desde el humo
     const tl = gsap.timeline();
+    const updating = shown.current;
     if (!shown.current) {
       shown.current = true;
       const r = el.getBoundingClientRect();
@@ -69,6 +71,34 @@ export function Bubble() {
       t.textContent = text;
       return;
     }
+    // el mensaje anterior se disuelve en humo mientras el nuevo empieza a escribirse
+    const prev = t.textContent || '';
+    const old = oldEl.current;
+    let dissolving = false;
+    if (prev && old && updating) {
+      dissolving = true;
+      gsap.killTweensOf(old);
+      old.textContent = prev;
+      gsap.set(old, { opacity: 1 });
+      const split = SplitText.create(old, { type: 'words' });
+      gsap.to(split.words, {
+        y: () => gsap.utils.random(-26, -12),
+        x: () => gsap.utils.random(-10, 10),
+        rotation: () => gsap.utils.random(-25, 25),
+        scale: 0.5,
+        opacity: 0,
+        duration: 0.42,
+        ease: 'power2.in',
+        stagger: { each: 0.012, from: 'random' },
+        onComplete: () => {
+          split.revert();
+          old.textContent = '';
+        },
+      });
+      const r = el.getBoundingClientRect();
+      for (let i = 0; i < 5; i++)
+        puff(r.left + gsap.utils.random(0.15, 0.85) * r.width, r.top + gsap.utils.random(0.2, 0.8) * r.height, { size: 30, rise: 40, life: 1.1 });
+    }
     t.textContent = '';
     const o = { n: 0 };
     setTyping(true);
@@ -76,7 +106,7 @@ export function Bubble() {
       n: text.length,
       duration: Math.min(3.2, text.length * 0.026),
       ease: 'none',
-      delay: tl.duration() > 0.6 ? 0.45 : 0.1,
+      delay: !updating ? 0.45 : dissolving ? 0.14 : 0.05,
       onUpdate: () => {
         t.textContent = text.slice(0, Math.round(o.n));
       },
@@ -107,6 +137,7 @@ export function Bubble() {
           <path ref={shape} d={SPEECH} vectorEffect="non-scaling-stroke" />
         </svg>
         <span className="bubble-text" ref={textEl} aria-hidden="true" />
+        <span className="bubble-old" ref={oldEl} aria-hidden="true" />
         <span className="bubble-measure" aria-hidden="true">
           {msg?.text}
         </span>

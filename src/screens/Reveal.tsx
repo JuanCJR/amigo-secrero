@@ -53,6 +53,58 @@ export function Reveal({ gid }: { gid: string }) {
   const holding = useRef(false);
   const openedAt = useRef(0);
   const ignoreClick = useRef(false);
+  const sparkRef = useRef<HTMLDivElement>(null);
+  const ambient = useRef<(gsap.core.Animation | gsap.core.Tween)[]>([]);
+
+  useEffect(() => () => ambient.current.forEach((a) => a.kill()), []);
+
+  /** Después de abrir: la caja rebota de vez en cuando, la carta flota y salen brillitos de adentro. */
+  const startAmbient = () => {
+    if (motion.reduced || !scene.current) return;
+    const q = gsap.utils.selector(scene);
+    const box = q('.gift-box')[0];
+    const card = q('.gift-card')[0];
+    ambient.current.push(
+      gsap
+        .timeline({ repeat: -1, repeatDelay: 1.8, delay: 0.6 })
+        .to(box, { scaleY: 0.9, scaleX: 1.07, duration: 0.12, ease: 'power2.in', transformOrigin: '50% 95%' })
+        .to(box, { scaleY: 1.06, scaleX: 0.96, duration: 0.14, ease: 'power2.out' })
+        .to(box, { scaleY: 1, scaleX: 1, duration: 0.7, ease: 'elastic.out(1.2,0.35)' })
+        .to(card, { y: -10, duration: 0.18, ease: 'power2.out' }, 0.12)
+        .to(card, { y: 0, duration: 0.6, ease: 'bounce.out' }, 0.3),
+      gsap.to(card, { rotation: 2.5, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1 }),
+    );
+    const layer = sparkRef.current;
+    if (!layer) return;
+    const COLORS = ['#FFC15E', '#FFF3DD', '#FF8A3D', '#8FF0C2'];
+    const spawn = () => {
+      const el = document.createElement('i');
+      el.className = Math.random() < 0.55 ? 'sp sp-star' : 'sp';
+      el.style.background = COLORS[Math.floor(Math.random() * COLORS.length)];
+      layer.appendChild(el);
+      const w = layer.clientWidth;
+      const life = gsap.utils.random(1.1, 1.8);
+      gsap.set(el, { x: gsap.utils.random(0.1, 0.9) * w, y: 0, scale: 0, rotation: gsap.utils.random(0, 180) });
+      gsap
+        .timeline({ onComplete: () => el.remove() })
+        .to(el, { scale: gsap.utils.random(0.8, 1.5), duration: 0.25, ease: 'back.out(3)' }, 0)
+        .to(el, { y: gsap.utils.random(-150, -90), duration: life, ease: 'power1.out' }, 0)
+        .to(el, { x: `+=${gsap.utils.random(-30, 30)}`, rotation: '+=180', duration: life, ease: 'sine.inOut' }, 0)
+        .to(el, { scale: 0, opacity: 0, duration: 0.4, ease: 'power1.in' }, life - 0.4);
+    };
+    const loop = () => {
+      spawn();
+      const c = gsap.delayedCall(gsap.utils.random(0.07, 0.16), loop);
+      ambient.current.push(c);
+    };
+    loop();
+    const glow = q('.box-glow')[0];
+    if (glow)
+      ambient.current.push(
+        gsap.fromTo(glow, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(2)' }),
+        gsap.to(glow, { scaleX: 1.15, opacity: 0.6, duration: 0.9, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 0.6 }),
+      );
+  };
   const repeat = pid ? seen.has(`reveal:${gid}:${pid}`) : false;
   const name = data?.receiver.name ?? '';
 
@@ -151,6 +203,7 @@ export function Reveal({ gid }: { gid: string }) {
     const nameEl = q('.card-name')[0] as HTMLElement;
     const finish = () => {
       setPhase('done');
+      startAmbient();
       if (pid) seen.mark(`reveal:${gid}:${pid}`);
       jose.say({ text: `¡Te tocó ${name}! Toca el botón para ver qué le gustaría.`, mood: 'celebrating', point: '.screen-cta .btn' });
     };
@@ -271,6 +324,8 @@ export function Reveal({ gid }: { gid: string }) {
       <div className="scene reveal-scene" ref={scene} onClick={skip}>
         <div className="rays" aria-hidden="true" />
         <div className="gift-stage">
+          <div className="box-glow" aria-hidden="true" />
+          <div className="sparkles" ref={sparkRef} aria-hidden="true" />
           <svg className="hold-ring" viewBox="0 0 220 220" aria-hidden="true">
             <circle cx="110" cy="110" r="100" className="track" />
             <circle cx="110" cy="110" r="100" className="fill" transform="rotate(-90 110 110)" />

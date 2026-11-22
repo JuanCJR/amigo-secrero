@@ -141,7 +141,7 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
           {creating ? (first ? 'Repite tu PIN' : 'Crea tu PIN') : p.name}
         </h1>
       </div>
-      <div data-anim="pop">
+      <div data-anim="pop" data-delay="0.55">
         <PinInput ref={ref} value={pin} onChange={setPin} onDone={enter} label="PIN de 4 números" autoFocus />
       </div>
     </Screen>

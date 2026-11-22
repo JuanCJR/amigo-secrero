@@ -40,7 +40,17 @@ export function enterIn(root: Element | null, skip: Set<string> = new Set(), del
     gsap.fromTo(
       pops,
       { opacity: 0, y: 36, scale: 0.72, rotation: () => gsap.utils.random(-7, 7) },
-      { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.7, ease: 'back.out(2.1)', stagger: 0.06, delay, clearProps: 'transform' },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 0.7,
+        ease: 'back.out(2.1)',
+        // data-delay permite esperar a que pase un elemento compartido (p. ej. el avatar en vuelo)
+        delay: (i: number, el: HTMLElement) => delay + i * 0.06 + Number(el.dataset.delay || 0),
+        clearProps: 'transform',
+      },
     );
   if (drops.length)
     gsap.fromTo(
@@ -139,6 +149,22 @@ export function Router({ children }: { children: (path: string) => ReactNode }) 
           props: 'borderRadius',
           onComplete: () => targets.forEach((t) => gsap.set(t, { clearProps: 'zIndex' })),
         });
+      // los avatares "se levantan" (crecen como si se acercaran), viajan en curva lateral y aterrizan con squash
+      if (!motion.reduced)
+        targets
+          .filter((t) => t.dataset.flipId!.startsWith('av-') && t.firstElementChild)
+          .forEach((t) => {
+            const inner = t.firstElementChild!;
+            const r = t.getBoundingClientRect();
+            const side = r.left + r.width / 2 < window.innerWidth / 2 ? 1 : -1;
+            gsap
+              .timeline()
+              .set(inner, { transformOrigin: '50% 100%' })
+              .to(inner, { x: 46 * side, scale: 1.28, rotation: 10 * side, duration: 0.36, ease: 'power2.out' })
+              .to(inner, { x: 0, scale: 1, rotation: 0, duration: 0.36, ease: 'power2.in' })
+              .to(inner, { scaleY: 0.82, scaleX: 1.14, duration: 0.08, ease: 'power2.out' })
+              .to(inner, { scaleY: 1, scaleX: 1, duration: 0.6, ease: 'elastic.out(1.2,0.35)', clearProps: 'transform' });
+          });
     }
     enterIn(scope, matched, p ? 0.05 : 0.2);
   }, [path]);
