@@ -175,12 +175,51 @@ export async function fetchPreview(rawUrl: string) {
 export function createApp(store: Store, secret: string) {
   const app = new Hono<Env>().basePath('/api');
 
+  /*
+   * Modelo de datos (una clave por cosa que escribe una sola persona, para que
+   * escrituras simultáneas no se pisen):
+   *   group:{gid}        datos del organizador (nombres, fecha, presupuesto, PIN admin)
+   *   pin:{gid}:{pid}    PIN de cada participante (lo escribe solo esa persona)
+   *   draw:{gid}         sorteo cifrado (se escribe una única vez)
+   *   wish:{gid}:{pid}   lista de deseos de cada participante
+   *   session:{token}    sesiones (expiran solas)
+   */
   const getGroup = async (gid: string) => {
     const raw = await store.get(`group:${gid}`);
     if (!raw) throw new ApiError(404, 'group_not_found');
-    return JSON.parse(raw) as Group;
+    const g = JSON.parse(raw) as Group;
+    const [pins, drawRaw] = await Promise.all([
+      Promise.all(g.participants.map((p) => store.get(`pin:${gid}:${p.id}`))),
+      store.get(`draw:${gid}`),
+    ]);
+    const migrations: Promise<void>[] = [];
+    g.participants.forEach((p, i) => {
+      const pin = pins[i] ? (JSON.parse(pins[i]!) as { hash: string; salt: string }) : null;
+      if (pin) {
+        p.pinHash = pin.hash;
+        p.pinSalt = pin.salt;
+      } else if (p.pinHash && p.pinSalt) {
+        // formato antiguo (PIN dentro del grupo): migrar a su propia clave
+        migrations.push(store.put(`pin:${gid}:${p.id}`, JSON.stringify({ hash: p.pinHash, salt: p.pinSalt })));
+      }
+    });
+    if (drawRaw) {
+      const d = JSON.parse(drawRaw) as { sealed: string; at: number };
+      g.drawn = true;
+      g.draw = d.sealed;
+      g.drawnAt = d.at;
+    } else if (g.drawn && g.draw) {
+      migrations.push(store.put(`draw:${gid}`, JSON.stringify({ sealed: g.draw, at: g.drawnAt ?? Date.now() })));
+    }
+    if (migrations.length) await Promise.all(migrations);
+    return g;
   };
-  const saveGroup = (g: Group) => store.put(`group:${g.id}`, JSON.stringify(g));
+  /** Guarda solo lo que escribe el organizador (nunca PINs ni el sorteo). */
+  const saveGroup = (g: Group) => {
+    const { draw: _d, drawn: _dn, drawnAt: _da, ...rest } = g;
+    const clean = { ...rest, participants: g.participants.map(({ pinHash: _h, pinSalt: _s, ...p }) => p) };
+    return store.put(`group:${g.id}`, JSON.stringify(clean));
+  };
   const newSession = async (s: Session) => {
     const token = randomId(24);
     await store.put(`session:${token}`, JSON.stringify(s), { ttl: SESSION_TTL });
@@ -288,7 +327,7 @@ export function createApp(store: Store, secret: string) {
     if (!p) throw new ApiError(404, 'participant_not_found');
     delete p.pinHash;
     delete p.pinSalt;
-    await saveGroup(g);
+    await store.delete(`pin:${g.id}:${p.id}`);
     await store.delete(`fail:${g.id}:${p.id}`);
     return c.json({ group: publicGroup(g) });
   });
@@ -300,7 +339,7 @@ export function createApp(store: Store, secret: string) {
     g.draw = await seal(secret, `draw:${g.id}`, makeDraw(g.participants.map((p) => p.id)));
     g.drawn = true;
     g.drawnAt = Date.now();
-    await saveGroup(g);
+    await store.put(`draw:${g.id}`, JSON.stringify({ sealed: g.draw, at: g.drawnAt }));
     return c.json({ group: publicGroup(g) });
   });
 
@@ -316,7 +355,7 @@ export function createApp(store: Store, secret: string) {
       const { hash, salt } = await hashPin(pin);
       p.pinHash = hash;
       p.pinSalt = salt;
-      await saveGroup(g);
+      await store.put(`pin:${g.id}:${p.id}`, JSON.stringify({ hash, salt }));
       return c.json({ token: await newSession({ gid: g.id, role: 'participant', pid: p.id }), created: true });
     }
     const n = await checkLock(lockKey);
