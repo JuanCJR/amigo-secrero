@@ -12,6 +12,7 @@ import { api, clp, joseError, type PublicGroup } from '../lib/api';
 import { rememberGroup, tokens } from '../lib/storage';
 import { put } from '../lib/data';
 import { confetti } from '../components/confetti';
+import { adminPath } from '../lib/paths';
 
 function useDraft(): [Draft, (d: Partial<Draft>) => void] {
   const [d, setD] = useState(getDraft);
@@ -190,7 +191,7 @@ export function CreatePin() {
       clearDraft();
       const r = document.querySelector('.pin')?.getBoundingClientRect();
       if (r) confetti(r.left + r.width / 2, r.top, { count: 50 });
-      navigate(`/g/${res.group.id}/admin`, { replace: true });
+      navigate(adminPath(res.group.id), { replace: true });
     } catch (e) {
       setBusy(false);
       setFirst(null);

@@ -13,6 +13,7 @@ import { isAuthError, useAdmin, useGroup, put } from '../lib/data';
 import { drawGuard, rememberGroup, tokens } from '../lib/storage';
 import { gsap, motion } from '../lib/gsap';
 import { Icon } from '../components/Icon';
+import { adminPath } from '../lib/paths';
 
 export const groupLink = (gid: string) => `${window.location.origin}/g/${gid}`;
 
@@ -205,7 +206,7 @@ function AdminPanel({ gid }: { gid: string }) {
         ))}
       </ul>
       {!g.drawn && (
-        <Btn variant="ghost" anim="pop" onClick={() => navigate(`/g/${gid}/admin/editar`)}>
+        <Btn variant="ghost" anim="pop" onClick={() => navigate(adminPath(gid, 'editar'))}>
           <Icon name="edit" /> Editar participantes
         </Btn>
       )}
@@ -231,7 +232,7 @@ function AdminPanel({ gid }: { gid: string }) {
           anim={false}
           onClick={() => {
             drawGuard.arm(gid);
-            navigate(`/g/${gid}/admin/sorteo`);
+            navigate(adminPath(gid, 'sorteo'));
           }}
         >
           Sí, ¡sortear!
@@ -269,7 +270,7 @@ export function AdminEdit({ gid }: { gid: string }) {
 }
 
 function AdminEditInner({ gid }: { gid: string }) {
-  useScreenMeta({ back: `/g/${gid}/admin`, step: 4, steps: 4 });
+  useScreenMeta({ back: adminPath(gid), step: 4, steps: 4 });
   const lock = useAdminLock();
   const { navigate } = useRouter();
   const { say } = useJose();
@@ -298,7 +299,7 @@ function AdminEditInner({ gid }: { gid: string }) {
             try {
               await api(`/admin/participants`, { method: 'PUT', token: tokens.admin(gid), body: { participants: list } });
               say({ text: '¡Guardao, la raja, weón!', mood: 'celebrating' });
-              navigate(`/g/${gid}/admin`);
+              navigate(adminPath(gid));
             } catch (e) {
               if (isAuthError(e)) lock();
               say({ text: joseError(e), mood: 'worried' });

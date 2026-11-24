@@ -6,6 +6,7 @@ import { useScreenMeta } from '../components/Shell';
 import { Screen } from '../components/Screen';
 import { Btn } from '../components/Btn';
 import { knownGroups, seen } from '../lib/storage';
+import { adminPath } from '../lib/paths';
 
 export function Welcome() {
   useScreenMeta({});
@@ -72,7 +73,7 @@ export function Welcome() {
               key={g.gid + g.role}
               className="known-group"
               data-anim="pop"
-              onClick={() => navigate(g.role === 'admin' ? `/g/${g.gid}/admin` : `/g/${g.gid}`)}
+              onClick={() => navigate(g.role === 'admin' ? adminPath(g.gid) : `/g/${g.gid}`)}
             >
               <strong>{g.title}</strong>
               <small>{g.role === 'admin' ? 'Eres organizador' : `Entras como ${g.name}`}</small>

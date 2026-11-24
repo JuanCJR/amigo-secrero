@@ -1462,3 +1462,14 @@ flex: none;
     box-shadow: 0 0 0 4px var(--gold);
   }
 }
+
+/* José chiquito en la barra cuando la pantalla está en silencio */
+.mini-slot {
+  flex: none;
+  width: 40px;
+  height: 52px;
+  margin-left: auto;
+}
+.topbar .stepper + .mini-slot {
+  margin-left: 4px;
+}

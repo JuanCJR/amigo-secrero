@@ -145,7 +145,11 @@ export function JoseProvider({ children }: { children: ReactNode }) {
   // ---------- slots: José se traslada entre zonas reservadas ----------
   const reposition = useCallback((instant = false) => {
     const holder = holderRef.current;
-    const slot = slots.current[slots.current.length - 1];
+    // en silencio José espera chiquito en la barra superior; para hablar usa su lugar grande
+    const all = slots.current;
+    const mini = all.find((el) => el.dataset.slot === 'mini');
+    const main = [...all].reverse().find((el) => el.dataset.slot !== 'mini');
+    const slot = quietRef.current && !presentRef.current && mini ? mini : main;
     if (!holder || !slot) return;
     const r = slot.getBoundingClientRect();
     const key = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`;
@@ -206,7 +210,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
     let zCount = 0;
     const loop = () => {
       const c = ctrlRef.current;
-      if (c && !document.hidden && presentRef.current) {
+      if (c && !document.hidden) {
         const e = c.emberScreen();
         if (c.mood === 'sleeping') {
           if (zCount++ % 3 === 0) emitZ(e.x, e.y);
@@ -318,17 +322,21 @@ export function JoseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const h = holderRef.current;
     if (!h) return;
-    gsap.to(h, { autoAlpha: present ? 1 : 0, duration: motion.reduced ? 0 : 0.25, overwrite: 'auto' });
-    // la franja baja con transición: reubicar a José cuando llegue
-    if (present) {
-      const t = window.setTimeout(() => reposition(true), 380);
-      return () => window.clearTimeout(t);
-    }
-  }, [present, reposition]);
+    // la franja baja con transición: José va a su lugar grande cuando llega, o vuelve a la barra
+    const t = window.setTimeout(() => reposition(), present ? 380 : 60);
+    return () => window.clearTimeout(t);
+  }, [present, quiet, reposition]);
 
   const onTap = () => {
     const c = ctrlRef.current;
     if (!c) return;
+    if (quietRef.current && !presentRef.current) {
+      // José chiquito: al tocarlo repite su último consejo
+      c.react('nod');
+      const last = msgRef.current;
+      say(last ? { ...last, loud: true, keepMood: true } : { text: 'Aquí estoy, weón. Si te perdís, tócame y te cuento.', loud: true });
+      return;
+    }
     c.react('tickle');
     c.react('flare');
     const e = c.emberScreen();
@@ -380,11 +388,11 @@ export function JoseProvider({ children }: { children: ReactNode }) {
 }
 
 /** Zona reservada donde José se para (nunca encima del contenido). */
-export function JoseSlot({ className }: { className?: string }) {
+export function JoseSlot({ className, kind }: { className?: string; kind?: 'mini' }) {
   const ref = useRef<HTMLDivElement>(null);
   const { registerSlot } = useJose();
   useLayoutEffect(() => registerSlot(ref.current!), [registerSlot]);
-  return <div ref={ref} className={`jm-slot ${className ?? ''}`} aria-hidden="true" />;
+  return <div ref={ref} className={`jm-slot ${className ?? ''}`} data-slot={kind} aria-hidden="true" />;
 }
 
 /** Atajo: José dice algo al montar la pantalla. */
