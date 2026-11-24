@@ -50,16 +50,16 @@ export function NamesEditor({
   const add = () => {
     const name = text.trim().replace(/\s+/g, ' ').slice(0, 30);
     if (!name) {
-      onError('Primero escribe un nombre en el cuadro, y después toca Agregar.');
+      onError('Ya po, weón, primero escribe un nombre en el cuadro y después toca Agregar.');
       input.current?.focus();
       return;
     }
     if (value.some((v) => v.name.toLocaleLowerCase('es') === name.toLocaleLowerCase('es'))) {
-      onError(`Ya hay alguien que se llama ${name}. Agrégale una inicial, como "${name} G."`);
+      onError(`Oe weón, ya hay un ${name} en la lista. Ponle una inicial, como "${name} G.", pa no armar la cagá.`);
       return;
     }
     if (value.length >= 40) {
-      onError('Uf, ya son 40 personas, ese es el máximo. Quita a alguien si quieres agregar otro.');
+      onError('¡Puta la weá, ya son 40! Ese es el máximo, culiao. Saca a alguien si querí meter a otro.');
       return;
     }
     const avatar = randomSeed();

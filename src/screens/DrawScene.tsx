@@ -55,7 +55,7 @@ function ArmedDraw({ gid }: { gid: string }) {
   const { say } = useJose();
   useEffect(() => {
     if (armed) return;
-    say({ text: 'El sorteo se hace desde el panel, después de confirmar. Toca Hacer el sorteo cuando estén todos.', mood: 'thinking' });
+    say({ text: 'El sorteo se hace desde el panel, después de confirmar po. Toca Hacer el sorteo cuando estén toos.', mood: 'thinking' });
     navigate(`/g/${gid}/admin`, { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!armed) return <Screen>{null}</Screen>;
@@ -95,7 +95,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
         const ctrl = jose.ctrl();
         ctrl?.setHat(true);
         jose.say({
-          text: e instanceof ApiError && e.code === 'already_drawn' ? 'Este sorteo ya estaba hecho, no se puede repetir. Toca Volver al panel para compartir el link.' : joseError(e),
+          text: e instanceof ApiError && e.code === 'already_drawn' ? 'Este sorteo ya estaba hecho, weón, no se repite. Toca Volver al panel pa compartir el link.' : joseError(e),
           mood: 'worried',
         });
       });
@@ -114,7 +114,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
       const n = people.length;
       const repeat = seen.has('draw-anim');
 
-      jose.say({ text: 'Junten las manos que viene la magia. Toca la pantalla si quieres adelantar.', keepMood: true });
+      jose.say({ text: 'Ya, weones, junten las manos que viene la magia. Toca la pantalla si querí adelantar.', keepMood: true });
 
       if (motion.reduced) {
         // versión sobria
@@ -134,7 +134,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
           });
           setPhase('done');
           jose.setMood('celebrating');
-          jose.say({ text: '¡Listo! Cada uno ya tiene su sobre sellado. Comparte el link para que lo abran.', mood: 'celebrating' });
+          jose.say({ text: '¡Listo el pollo! Cada uno ya tiene su sobre sellao. Comparte el link pa que lo abran.', mood: 'celebrating' });
         };
         drawPromise.current?.then(() => gsap.delayedCall(0.6, finish)).catch(() => {});
         return;
@@ -308,7 +308,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
             drawPromise.current
               ?.then(() => {
                 setPhase('done');
-                jose.say({ text: '¡Listo! Cada uno ya tiene su sobre sellado. Comparte el link para que lo abran.', mood: 'celebrating' });
+                jose.say({ text: '¡Listo el pollo! Cada uno ya tiene su sobre sellao. Comparte el link pa que lo abran.', mood: 'celebrating' });
               })
               .catch(() => {});
           }),
@@ -325,7 +325,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
     const tl = tlRef.current;
     if (tl && tl.isActive() && tl.timeScale() < 5) {
       tl.timeScale(6);
-      jose.say({ text: 'Dale, rapidito entonces.', keepMood: true });
+      jose.say({ text: 'Ya po, weón ansioso, rapidito entonces.', keepMood: true });
     }
   };
 

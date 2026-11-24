@@ -33,9 +33,9 @@ export function CreateNames() {
   const band = n === 0 ? 0 : n < 3 ? 1 : 2;
   useEffect(() => {
     if (band === 0)
-      say({ text: 'Escribe el nombre de cada persona que juega y toca Agregar. Si tú también participas, agrégate.', point: '#add-name' });
-    else if (band === 1) say({ text: `¡Vamos bien! Necesito al menos 3 personas; agrega ${3 - n === 1 ? 'una más' : 'dos más'}.`, mood: 'idle' });
-    else say({ text: 'Buena lista. Toca un avatar si quieres cambiarlo, o toca Siguiente.', point: '.screen-cta .btn' });
+      say({ text: 'Escribe el nombre de cada uno que juega y toca Agregar. Si tú también le hací, métete.', point: '#add-name' });
+    else if (band === 1) say({ text: `¡Vamos bien, weón! Necesito mínimo 3; mete ${3 - n === 1 ? 'uno más' : 'dos más'}.`, mood: 'idle' });
+    else say({ text: 'Buena la lista, hermano. Toca un avatar si lo querí cambiar, o toca Siguiente.', point: '.screen-cta .btn' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [band]);
 
@@ -44,7 +44,7 @@ export function CreateNames() {
       cta={
         <Btn
           blocked={n < 3}
-          onBlocked={() => say({ text: `Me faltan ${3 - n} ${3 - n === 1 ? 'persona' : 'personas'} para poder sortear. Escribe sus nombres arriba y toca Agregar.`, mood: 'worried' })}
+          onBlocked={() => say({ text: `Me ${3 - n === 1 ? 'falta' : 'faltan'} ${3 - n} ${3 - n === 1 ? 'weón' : 'weones'} pa poder sortear, culiao. Escribe los nombres arriba y toca Agregar.`, mood: 'worried' })}
           onClick={() => navigate('/crear/2')}
         >
           Siguiente
@@ -72,7 +72,7 @@ export function CreateDetails() {
   const { say } = useJose();
   const [d, update] = useDraft();
   const [custom, setCustom] = useState(d.budget && !QUICK.includes(d.budget) ? String(d.budget) : '');
-  useSay({ text: 'Elige el día del intercambio y cuánto gastar más o menos. Después toca Siguiente.', point: '#date-field' });
+  useSay({ text: 'Elige el día del intercambio y cuántas lucas gastar más o menos. Después toca Siguiente.', point: '#date-field' });
   const today = new Date();
   const min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const ready = !!d.date && !!d.budget;
@@ -84,7 +84,7 @@ export function CreateDetails() {
           blocked={!ready}
           onBlocked={() =>
             say({
-              text: !d.date ? 'Me falta la fecha. Toca el cuadro de fecha y elige un día en el calendario.' : 'Me falta el presupuesto. Toca uno de los montos o escribe otro.',
+              text: !d.date ? 'Me falta la fecha po. Toca el cuadro de fecha y elige un día en el calendario.' : '¿Y las lucas, weón? Toca uno de los montos o escribe otro.',
               mood: 'worried',
               point: !d.date ? '#date-field' : '.budget-grid',
             })
@@ -107,7 +107,7 @@ export function CreateDetails() {
         value={d.date}
         onChange={(e) => {
           update({ date: e.target.value });
-          if (e.target.value && !d.budget) say({ text: '¡Anotado! Ahora elige cuánto gastar más o menos.', point: '.budget-grid' });
+          if (e.target.value && !d.budget) say({ text: '¡Anotao! Ahora elige cuántas lucas gastar más o menos.', point: '.budget-grid' });
         }}
       />
       <div className="group-label" data-anim="pop">
@@ -122,7 +122,7 @@ export function CreateDetails() {
             onClick={() => {
               setCustom('');
               update({ budget: b });
-              if (d.date) say({ text: `${clp(b)}, perfecto. Toca Siguiente para seguir.`, point: '.screen-cta .btn' });
+              if (d.date) say({ text: `${clp(b)}, la raja, conchetumare. Toca Siguiente pa seguir.`, point: '.screen-cta .btn' });
             }}
           >
             {clp(b)}
@@ -152,25 +152,25 @@ export function CreatePin() {
   const [first, setFirst] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const pinRef = useRef<PinHandle>(null);
-  useSay({ text: 'Inventa un PIN de 4 números para volver a entrar como organizador. Ni con él se ve el sorteo: nadie puede.', mood: 'idle' });
+  useSay({ text: 'Inventa un PIN de 4 números pa volver a entrar como organizador. Ni con ese se ve el sorteo: nadie lo puede sapear.', mood: 'idle' });
 
   const submit = async (value: string) => {
     if (!first) {
       setFirst(value);
       setPin('');
-      say({ text: 'Bien. Ahora escríbelo otra vez, para estar seguros.', point: '.pin' });
+      say({ text: 'Bien ahí. Ahora escríbelo otra vez, pa estar seguros.', point: '.pin' });
       return;
     }
     if (value !== first) {
       pinRef.current?.shake();
       setFirst(null);
       setPin('');
-      say({ text: 'No coinciden, pero tranqui. Escribe un PIN nuevo desde el principio.', mood: 'worried' });
+      say({ text: 'No calzan, weón, la cagaste. Escribe un PIN nuevo desde cero.', mood: 'worried' });
       return;
     }
     const d = getDraft();
     setBusy(true);
-    say({ text: 'Armando todo… dame un segundo, sin apuro.', mood: 'thinking' });
+    say({ text: 'Armando toa la weá… dame un segundo, no me apurí, culiao.', mood: 'thinking' });
     try {
       const res = await api<{ group: PublicGroup; token: string }>('/groups', {
         body: {
@@ -207,7 +207,7 @@ export function CreatePin() {
         <Btn
           busy={busy}
           blocked={pin.length < 4}
-          onBlocked={() => say({ text: 'Escribe los 4 números del PIN en las casillas.', point: '.pin', mood: 'worried' })}
+          onBlocked={() => say({ text: 'Ya po, escribe los 4 números del PIN en las casillas.', point: '.pin', mood: 'worried' })}
           onClick={() => submit(pin)}
         >
           {first ? 'Crear amigo secreto' : 'Siguiente'}

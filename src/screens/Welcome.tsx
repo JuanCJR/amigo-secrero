@@ -14,11 +14,11 @@ export function Welcome() {
   const first = !seen.has('hello');
   useSay(
     groups.length
-      ? { text: '¡Volviste, qué bueno! Toca tu grupo para entrar, o arma uno nuevo con el botón rojo.', point: '.known-group' }
+      ? { text: '¡Wena, weón culiao, volviste! Toca tu grupo pa entrar, o arma uno nuevo con el botón rojo.', point: '.known-group' }
       : {
           text: first
-            ? '¡Hola! Soy José Miguel y voy a ser tu guía, tranqui. Toca el botón rojo para armar tu amigo secreto.'
-            : 'Toca el botón rojo para armar un amigo secreto nuevo. Yo te acompaño en cada paso.',
+            ? '¡Wena, weón! Soy el José Miguel, el más choro de la pobla, y yo te llevo. Toca el botón rojo pa armar tu amigo secreto.'
+            : 'Toca el botón rojo pa armar un amigo secreto nuevo. Yo te acompaño en toas, weón, cachai.',
           point: '.screen-cta .btn',
         },
   );
