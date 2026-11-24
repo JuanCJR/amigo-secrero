@@ -28,7 +28,7 @@ function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
   const ref = useRef<PinHandle>(null);
   const { data: group } = useGroup(gid);
   useEffect(() => {
-    say({ text: 'Este panel es del organizador, loco, está cuidao. Pon tu PIN de organizador pa entrar.', point: '.pin' });
+    say({ text: 'Este panel es del organizador, weón, no cualquier sapo entra. Pon tu PIN de organizador.', point: '.pin' });
   }, [say]);
   const submit = async (v: string) => {
     setBusy(true);
@@ -46,7 +46,7 @@ function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
     }
   };
   return (
-    <Screen cta={<Btn busy={busy} blocked={pin.length < 4} onBlocked={() => say({ text: 'Ya po, escribe los 4 números de tu PIN.', mood: 'worried', point: '.pin' })} onClick={() => submit(pin)}>Entrar</Btn>}>
+    <Screen cta={<Btn busy={busy} blocked={pin.length < 4} onBlocked={() => say({ text: 'Ya po, weón, escribe los 4 números de tu PIN.', mood: 'worried', point: '.pin' })} onClick={() => submit(pin)}>Entrar</Btn>}>
       <h1 className="title" data-anim="drop">
         {group?.title || 'Panel del organizador'}
       </h1>
@@ -101,7 +101,7 @@ function AdminPanel({ gid }: { gid: string }) {
     if (!g) return;
     rememberGroup({ gid, role: 'admin', title: g.title });
     put(`group:${gid}`, g);
-    if (g.drawn) say({ text: 'El sorteo ya está hecho, hermano. Manda el link al grupo pa que cada uno cache a quién le tocó.', point: '.screen-cta .btn' });
+    if (g.drawn) say({ text: 'El sorteo ya está hecho, weón. Manda el link al grupo pa que cada uno cache a quién le tocó.', point: '.screen-cta .btn' });
     else say({ text: 'Tírale este link al grupo pa que armen su lista. Cuando querai, toca Hacer el sorteo.', point: '#share-copy' });
   }, [g?.drawn, !!g]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -114,11 +114,11 @@ function AdminPanel({ gid }: { gid: string }) {
   const copy = async (e: React.MouseEvent) => {
     try {
       await navigator.clipboard.writeText(groupLink(gid));
-      say({ text: '¡Listo el link, loco! Pégalo en el grupo de WhatsApp de los cabros.', mood: 'celebrating' });
+      say({ text: '¡Listo el link, conchetumare! Pégalo en el grupo de WhatsApp de los weones.', mood: 'celebrating' });
       const t = e.currentTarget as HTMLElement;
       if (!motion.reduced) gsap.fromTo(t, { rotation: -6 }, { rotation: 0, duration: 0.6, ease: 'elastic.out(1,0.3)' });
     } catch {
-      say({ text: 'No pude copiarlo solo, hermano. Mantén apretao el link de arriba y elige Copiar.', mood: 'worried', point: '.share-url' });
+      say({ text: 'Puta, no pude copiarlo solo. Mantén apretao el link de arriba y elige Copiar.', mood: 'worried', point: '.share-url' });
     }
   };
 
@@ -127,7 +127,7 @@ function AdminPanel({ gid }: { gid: string }) {
       const r = await api<{ group: PublicGroup }>(`/admin/reset/${pid}`, { method: 'POST', token: tokens.admin(gid) });
       mutate({ ...data!, group: r.group });
       const p = r.group.participants.find((x) => x.id === pid);
-      say({ text: `Listo, le reinicié el PIN al ${p?.name}. Dile que entre al link y se haga uno nuevo.`, mood: 'celebrating' });
+      say({ text: `Listo, le reinicié el PIN al weón del ${p?.name}. Dile que entre al link y se haga uno nuevo.`, mood: 'celebrating' });
     } catch (e) {
       say({ text: joseError(e), mood: 'worried' });
     }
@@ -147,7 +147,7 @@ function AdminPanel({ gid }: { gid: string }) {
           <Btn
             onClick={() => {
               setConfirm(true);
-              say({ text: 'Ojo al charqui, que después de sortear no hay vuelta atrás. ¿Están toos? Si es así, toca Sí, sortear.', mood: 'worried' });
+              say({ text: 'Ojo al charqui, weón, que después de sortear no hay vuelta atrás. ¿Están toos los culiaos? Si es así, toca Sí, sortear.', mood: 'worried' });
             }}
           >
             Hacer el sorteo
@@ -194,7 +194,7 @@ function AdminPanel({ gid }: { gid: string }) {
                 className="link-btn"
                 onClick={() => {
                   setResetting(p.id);
-                  say({ text: `¿Al ${p.name} se le olvidó el PIN? Si se lo reinicio, tiene que hacerse uno nuevo. Su sorteo no cambia, tranqui.`, mood: 'thinking' });
+                  say({ text: `¿El weón del ${p.name} se olvidó el PIN? Si se lo reinicio, tiene que hacerse uno nuevo. Su sorteo no cambia, tranqui.`, mood: 'thinking' });
                 }}
               >
                 Reiniciar PIN
@@ -240,7 +240,7 @@ function AdminPanel({ gid }: { gid: string }) {
           anim={false}
           onClick={() => {
             setConfirm(false);
-            say({ text: 'Dale, sin apuro, loco. Cuando estén toos, toca Hacer el sorteo.', point: '.screen-cta .btn' });
+            say({ text: 'Dale, sin apuro, weón. Cuando estén toos, toca Hacer el sorteo.', point: '.screen-cta .btn' });
           }}
         >
           Todavía no
@@ -291,12 +291,12 @@ function AdminEditInner({ gid }: { gid: string }) {
         <Btn
           busy={busy}
           blocked={list.length < 3}
-          onBlocked={() => say({ text: 'Necesito mínimo 3 cabros po. Mete a alguien más arriba.', mood: 'worried' })}
+          onBlocked={() => say({ text: 'Necesito mínimo 3 weones po. Mete a alguien más arriba.', mood: 'worried' })}
           onClick={async () => {
             setBusy(true);
             try {
               await api(`/admin/participants`, { method: 'PUT', token: tokens.admin(gid), body: { participants: list } });
-              say({ text: '¡Guardao, bacán!', mood: 'celebrating' });
+              say({ text: '¡Guardao, la raja, weón!', mood: 'celebrating' });
               navigate(`/g/${gid}/admin`);
             } catch (e) {
               if (isAuthError(e)) lock();

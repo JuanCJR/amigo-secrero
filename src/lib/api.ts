@@ -73,42 +73,42 @@ export function joseError(e: unknown): string {
   const left = e instanceof ApiError ? e.data?.left : undefined;
   switch (code) {
     case 'network':
-      return 'Chuta, se cortó la señal, hermanito. Cacha tu internet y toca el botón otra vez.';
+      return '¡Chucha, se cortó la señal, weón! Cacha tu internet de mierda y toca el botón otra vez.';
     case 'group_not_found':
-      return 'No pillo este grupo, compadre. Pídele al organizador que te mande el link de nuevo.';
+      return 'No pillo esta weá de grupo, compadre. Pídele al organizador que te mande el link de nuevo.';
     case 'wrong_pin':
       return left > 0
         ? `Ese PIN no es, pero tranqui. Te quedan ${left} intentos; si no te acuerdas, pídele al organizador que lo reinicie.`
         : 'Ese PIN tampoco era. Tomemos un respiro: prueba en 10 minutos o pídele al organizador que lo reinicie.';
     case 'locked':
-      return 'Wena, muchos intentos seguidos, loco, relájate un poco. Prueba en 10 minutos o pídele al organizador que te reinicie el PIN.';
+      return 'Ya po, weón, son muchos intentos seguidos, relaja la raja. Prueba en 10 minutos o pídele al organizador que te reinicie el PIN.';
     case 'bad_url':
-      return 'Mmm, eso no es un link, hermano, pero no pasa na. En la tienda toca Compartir, después Copiar link, y lo pegai aquí.';
+      return '¿Y esa weá? No es un link, hermano, pero no pasa na. En la tienda toca Compartir, después Copiar link, y lo pegai aquí.';
     case 'duplicate_wish':
-      return 'Ese link ya lo teníai en la lista po. Prueba con otro regalo.';
+      return 'Ese link ya lo teníai en la lista, weón. Prueba con otro regalo.';
     case 'too_many_wishes':
-      return '¡Ya teníai 15 ideas, loco, con eso sobra! Borra una si querí meter otra.';
+      return '¡Ya teníai 15 weás, conchetumare, con eso sobra! Borra una si querí meter otra.';
     case 'duplicate_name':
-      return 'Hay dos compadres con el mismo nombre po. Ponle una inicial a uno, como "Pedro G."';
+      return 'Hay dos weones con el mismo nombre. Ponle una inicial a uno, como "Pedro G."';
     case 'empty_name':
-      return 'Hay un nombre vacío en la lista, hermano. Escríbelo o sácalo con la X.';
+      return 'Hay un nombre vacío en la lista, weón. Escríbelo o sácalo con la X.';
     case 'too_few':
-      return 'Me faltan cabros, necesito mínimo 3 pa sortear. Mete a alguien más.';
+      return '¿Con quién chucha vai a jugar? Necesito mínimo 3 weones pa sortear. Mete a alguien más.';
     case 'too_many':
-      return '¡Uf, son más de 40, loco! Saca a algunos pa que pueda sortear.';
+      return '¡Puta, son más de 40 weones! Saca a algunos pa que pueda sortear.';
     case 'bad_date':
-      return 'Me falta la fecha del intercambio po. Tócala y elige un día en el calendario.';
+      return 'Me falta la fecha del intercambio, weón. Tócala y elige un día en el calendario.';
     case 'bad_budget':
-      return 'Esa plata no me cuadra, hermano. Pon puros números, tipo 15000.';
+      return '¿Qué weá es esa plata? Pon puros números, culiao, tipo 15000.';
     case 'bad_pin':
-      return 'El PIN es de 4 números no más po. Escríbelo de nuevo, sin letras.';
+      return 'El PIN es de 4 números no más, weón. Escríbelo de nuevo, sin letras.';
     case 'already_drawn':
-      return 'El sorteo ya está hecho, loco, no hay vuelta. Comparte el link pa que cada uno cache el suyo.';
+      return 'El sorteo ya está hecho, weón, no hay vuelta. Comparte el link pa que cada uno cache el suyo.';
     case 'no_session':
-      return 'Se me olvidó quién erai, sorry hermano. Entra de nuevo con tu nombre y tu PIN.';
+      return 'Puta, se me olvidó quién chucha erai. Entra de nuevo con tu nombre y tu PIN.';
     case 'not_drawn':
-      return 'Todavía no se hace el sorteo po. Vuelve cuando avise el organizador; mientras, arma tu lista.';
+      return 'Todavía no se hace el sorteo, weón, no seai ansioso. Vuelve cuando avise el organizador; mientras, arma tu lista.';
     default:
-      return 'Chuta, algo se me enredó por dentro. Espérate un ratito y toca el botón otra vez.';
+      return '¡Chucha, se me cagó algo por dentro! Espérate un ratito y toca el botón otra vez.';
   }
 }

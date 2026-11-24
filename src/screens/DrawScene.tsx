@@ -95,7 +95,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
         const ctrl = jose.ctrl();
         ctrl?.setHat(true);
         jose.say({
-          text: e instanceof ApiError && e.code === 'already_drawn' ? 'Este sorteo ya estaba hecho, loco, no se repite. Toca Volver al panel pa compartir el link.' : joseError(e),
+          text: e instanceof ApiError && e.code === 'already_drawn' ? 'Este sorteo ya estaba hecho, weón, no se repite. Toca Volver al panel pa compartir el link.' : joseError(e),
           mood: 'worried',
         });
       });
@@ -114,7 +114,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
       const n = people.length;
       const repeat = seen.has('draw-anim');
 
-      jose.say({ text: 'Ya cabros, junten las manos que viene la magia. Toca la pantalla si querí adelantar.', keepMood: true });
+      jose.say({ text: 'Ya, weones, junten las manos que viene la magia. Toca la pantalla si querí adelantar.', keepMood: true });
 
       if (motion.reduced) {
         // versión sobria
@@ -325,7 +325,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
     const tl = tlRef.current;
     if (tl && tl.isActive() && tl.timeScale() < 5) {
       tl.timeScale(6);
-      jose.say({ text: 'Ya po, rapidito entonces.', keepMood: true });
+      jose.say({ text: 'Ya po, weón ansioso, rapidito entonces.', keepMood: true });
     }
   };
 

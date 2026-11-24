@@ -150,7 +150,7 @@ export function Reveal({ gid }: { gid: string }) {
         jose.say({ text: 'Ya lo abriste antes, pero dale otra vez no más: toca el regalo.', point: '.gift' });
         return;
       }
-      jose.say({ text: 'Te traje algo, hermanito. Déjame ponerlo aquí…', keepMood: true });
+      jose.say({ text: 'Te traje una weá, hermanito. Déjame ponerla aquí…', keepMood: true });
       gsap.delayedCall(0.8, () => {
         const ctrl = jose.ctrl();
         if (!ctrl) return;
@@ -163,7 +163,7 @@ export function Reveal({ gid }: { gid: string }) {
           onComplete: () => {
             setPhase('ready');
             ctrl.setMood('idle');
-            jose.say({ text: 'Mantén apretao el regalo hasta que se llene el círculo. Yo no miro, palabra de choro.', point: '.gift' });
+            jose.say({ text: 'Mantén apretao el regalo hasta que se llene el círculo. Yo no miro, por la cresta, palabra de choro.', point: '.gift' });
           },
         });
         tl.set(g, { opacity: 1 })
@@ -205,7 +205,7 @@ export function Reveal({ gid }: { gid: string }) {
       setPhase('done');
       startAmbient();
       if (pid) seen.mark(`reveal:${gid}:${pid}`);
-      jose.say({ text: `¡Te tocó el ${name}, loco! Toca el botón pa ver qué le tinca.`, mood: 'celebrating', point: '.screen-cta .btn' });
+      jose.say({ text: `¡Chucha, te tocó el ${name}! Toca el botón pa ver qué weá le tinca.`, mood: 'celebrating', point: '.screen-cta .btn' });
     };
     if (motion.reduced) {
       gsap.to(q('.gift-lid, .gift-box, .hold-ring'), { opacity: 0, duration: 0.25 });
@@ -300,7 +300,7 @@ export function Reveal({ gid }: { gid: string }) {
     gsap.to(shake.current, { amp: 0, duration: 0.3 });
     gsap.to(q('.gift-scale, .hold-ring'), { scale: 1, duration: 0.8, ease: 'elastic.out(1.2,0.3)' });
     gsap.to(gift.current, { rotation: 0, x: 0, duration: 0.6, ease: 'elastic.out(1,0.3)', delay: 0.3 });
-    jose.say({ text: '¡Casi, casi! Mantenlo apretao un poquito más, hasta que se llene el círculo.', point: '.gift' });
+    jose.say({ text: '¡Casi, weón! Mantenlo apretao un poquito más, hasta que se llene el círculo.', point: '.gift' });
   };
 
   const skip = () => {

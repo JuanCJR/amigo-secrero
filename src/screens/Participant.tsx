@@ -29,7 +29,7 @@ export function Join({ gid }: { gid: string }) {
     seen.mark(`join:${gid}`);
     say({
       text: first
-        ? `¡Wena, wena! Soy el José Miguel, el que manda en este amigo secreto. Busca tu nombre y tócalo pa entrar.`
+        ? `¡Wena, weón! Soy el José Miguel, el que manda en esta weá de amigo secreto. Busca tu nombre y tócalo pa entrar.`
         : 'Toca tu nombre pa entrar. Si ya teníai PIN, te lo voy a pedir po.',
       point: '.face-grid',
     });
@@ -85,7 +85,7 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
     if (!p) return;
     say(
       creating
-        ? { text: `¡Wena, ${p.name}! Inventa un PIN de 4 números que no se te olvide; con ese entrai desde otro celu.`, point: '.pin' }
+        ? { text: `¡Wena, ${p.name} culiao! Inventa un PIN de 4 números que no se te olvide; con ese entrai desde otro celu.`, point: '.pin' }
         : { text: `¡Wena de nuevo, ${p.name}! Pon tu PIN de 4 números pa entrar.`, point: '.pin' },
     );
   }, [!!p]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -101,7 +101,7 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
       ref.current?.shake();
       setFirst(null);
       setPin('');
-      say({ text: 'No calzan, hermano, pero no pasa na. Inventa el PIN de nuevo desde cero.', mood: 'worried' });
+      say({ text: 'No calzan, weón, la cagaste. Pero no pasa na: inventa el PIN de nuevo desde cero.', mood: 'worried' });
       return;
     }
     setBusy(true);
@@ -110,7 +110,7 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
       tokens.setParticipant(gid, r.token);
       rememberGroup({ gid, role: 'participant', title: g!.title, name: p!.name });
       put(`group:${gid}`, { ...g!, participants: g!.participants.map((x) => (x.id === pid ? { ...x, claimed: true } : x)) });
-      say({ text: `¡Adentro, ${p!.name}, bacán!`, mood: 'celebrating' });
+      say({ text: `¡Adentro, ${p!.name}, conchetumare!`, mood: 'celebrating' });
       await ref.current?.success();
       const rect = document.querySelector('.pin')?.getBoundingClientRect();
       if (rect) confetti(rect.left + rect.width / 2, rect.top, { count: 40 });
@@ -150,7 +150,7 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
 
 const TOUR = [
   { text: '', point: null },
-  { text: 'Primero, arma tu lista de deseos con links de las weas que te tinquen.', point: '[data-flip-id="card-list"]' },
+  { text: 'Primero, arma tu lista de deseos con links de las weás que te tinquen.', point: '[data-flip-id="card-list"]' },
   { text: 'Cuando el organizador haga el sorteo, aquí cachai a quién le regalai.', point: '[data-flip-id="card-reveal"]' },
   { text: 'Y aquí ves lo que pidió, pa achuntarle con el regalo. ¡Ya, partamos por tu lista!', point: '[data-flip-id="card-their"]' },
 ];
@@ -190,7 +190,7 @@ export function Home({ gid }: { gid: string }) {
   const next = () => {
     if (!wishes) return { label: 'Armar mi lista', to: `/g/${gid}/mi-lista`, text: 'Ya po, ahora te toca armar tu lista de deseos. Toca el botón de abajo.' };
     if (drawn && !revealed)
-      return { label: 'Descubrir a mi amigo secreto', to: `/g/${gid}/descubrir`, text: '¡Ya se hizo el sorteo, loco! Toca el botón pa cachar a quién le regalai.' };
+      return { label: 'Descubrir a mi amigo secreto', to: `/g/${gid}/descubrir`, text: '¡Ya se hizo el sorteo, weón! Toca el botón pa cachar a quién chucha le regalai.' };
     if (revealed) return { label: 'Ver qué le gustaría', to: `/g/${gid}/su-lista`, text: 'Ya cachai a quién le regalai. Toca el botón pa ver su lista de deseos.' };
     return {
       label: 'Agregar más deseos',
@@ -203,14 +203,14 @@ export function Home({ gid }: { gid: string }) {
     if (!data) return;
     const tourKey = `tour:${gid}:${data.me.id}`;
     if (wasDrawn.current === false && drawn) {
-      say({ text: '¡Ya se hizo el sorteo, loco! Toca el botón pa cachar a quién le regalai.', mood: 'celebrating' });
+      say({ text: '¡Ya se hizo el sorteo, weón! Toca el botón pa cachar a quién chucha le regalai.', mood: 'celebrating' });
       wasDrawn.current = drawn;
       return;
     }
     wasDrawn.current = drawn;
     if (!seen.has(tourKey) && tour === null) {
       setTour(0);
-      say({ text: `¡Wena, ${data.me.name}! Te explico cómo es la weá en tres pasos, tranqui.`, mood: 'idle' });
+      say({ text: `¡Wena, ${data.me.name}, weón! Te explico cómo es la weá en tres pasos, tranqui.`, mood: 'idle' });
       return;
     }
     if (tour === null) {
@@ -281,7 +281,7 @@ export function Home({ gid }: { gid: string }) {
                 if (tour !== null) return advanceTour();
                 if (c.locked)
                   say({
-                    text: c.id === 'card-reveal' ? 'Todavía no se hace el sorteo po. Mientras, arma tu lista; te aviso aquí al tiro cuando pase.' : 'Calma, loco: primero cacha a tu amigo secreto, y después ves su lista.',
+                    text: c.id === 'card-reveal' ? 'Todavía no se hace el sorteo po. Mientras, arma tu lista; te aviso aquí al tiro cuando pase.' : 'Calma, weón: primero cacha a tu amigo secreto, y después ves su lista.',
                     mood: 'thinking',
                   });
                 else navigate(c.to);

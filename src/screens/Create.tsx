@@ -34,7 +34,7 @@ export function CreateNames() {
   useEffect(() => {
     if (band === 0)
       say({ text: 'Escribe el nombre de cada uno que juega y toca Agregar. Si tú también le hací, métete.', point: '#add-name' });
-    else if (band === 1) say({ text: `¡Vamos bien, loco! Necesito mínimo 3; mete ${3 - n === 1 ? 'uno más' : 'dos más'}.`, mood: 'idle' });
+    else if (band === 1) say({ text: `¡Vamos bien, weón! Necesito mínimo 3; mete ${3 - n === 1 ? 'uno más' : 'dos más'}.`, mood: 'idle' });
     else say({ text: 'Buena la lista, hermano. Toca un avatar si lo querí cambiar, o toca Siguiente.', point: '.screen-cta .btn' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [band]);
@@ -44,7 +44,7 @@ export function CreateNames() {
       cta={
         <Btn
           blocked={n < 3}
-          onBlocked={() => say({ text: `Me ${3 - n === 1 ? 'falta' : 'faltan'} ${3 - n} ${3 - n === 1 ? 'cabro' : 'cabros'} pa poder sortear po. Escribe los nombres arriba y toca Agregar.`, mood: 'worried' })}
+          onBlocked={() => say({ text: `Me ${3 - n === 1 ? 'falta' : 'faltan'} ${3 - n} ${3 - n === 1 ? 'weón' : 'weones'} pa poder sortear, culiao. Escribe los nombres arriba y toca Agregar.`, mood: 'worried' })}
           onClick={() => navigate('/crear/2')}
         >
           Siguiente
@@ -84,7 +84,7 @@ export function CreateDetails() {
           blocked={!ready}
           onBlocked={() =>
             say({
-              text: !d.date ? 'Me falta la fecha po. Toca el cuadro de fecha y elige un día en el calendario.' : 'Me faltan las lucas, hermano. Toca uno de los montos o escribe otro.',
+              text: !d.date ? 'Me falta la fecha po. Toca el cuadro de fecha y elige un día en el calendario.' : '¿Y las lucas, weón? Toca uno de los montos o escribe otro.',
               mood: 'worried',
               point: !d.date ? '#date-field' : '.budget-grid',
             })
@@ -122,7 +122,7 @@ export function CreateDetails() {
             onClick={() => {
               setCustom('');
               update({ budget: b });
-              if (d.date) say({ text: `${clp(b)}, la raja. Toca Siguiente pa seguir.`, point: '.screen-cta .btn' });
+              if (d.date) say({ text: `${clp(b)}, la raja, conchetumare. Toca Siguiente pa seguir.`, point: '.screen-cta .btn' });
             }}
           >
             {clp(b)}
@@ -165,12 +165,12 @@ export function CreatePin() {
       pinRef.current?.shake();
       setFirst(null);
       setPin('');
-      say({ text: 'No calzan, pero tranqui. Escribe un PIN nuevo desde cero.', mood: 'worried' });
+      say({ text: 'No calzan, weón, la cagaste. Escribe un PIN nuevo desde cero.', mood: 'worried' });
       return;
     }
     const d = getDraft();
     setBusy(true);
-    say({ text: 'Armando toa la wea… dame un segundo, sin apuro.', mood: 'thinking' });
+    say({ text: 'Armando toa la weá… dame un segundo, no me apurí, culiao.', mood: 'thinking' });
     try {
       const res = await api<{ group: PublicGroup; token: string }>('/groups', {
         body: {

@@ -121,7 +121,7 @@ export function MyList({ gid }: { gid: string }) {
       const t = await navigator.clipboard.readText();
       if (!t) throw new Error();
       setRaw(t);
-      if (!extractUrl(t)) say({ text: 'Eso que copiaste no es un link, hermano. En la tienda toca Compartir y después Copiar link.', mood: 'worried' });
+      if (!extractUrl(t)) say({ text: '¿Qué weá copiaste? Eso no es un link. En la tienda toca Compartir y después Copiar link.', mood: 'worried' });
     } catch {
       say({ text: 'No pude leer lo que copiaste. Mantén apretao el cuadro de texto y elige Pegar.', mood: 'worried', point: '#wish-url' });
     }
@@ -147,7 +147,7 @@ export function MyList({ gid }: { gid: string }) {
       mutate({ ...data!, wishlist: r.wishlist });
       const n = r.wishlist.length;
       say({
-        text: n === 1 ? '¡Anotao tu primer deseo, bacán! Mete otra opción si querí; mientras más ideas, mejor.' : `¡Anotao! Ya teníai ${n} ideas. Mete otra o toca Volver cuando estí listo.`,
+        text: n === 1 ? '¡Anotao tu primer deseo, conchetumare! Mete otra weá si querí; mientras más ideas, mejor.' : `¡Anotao! Ya teníai ${n} ideas. Mete otra o toca Volver cuando estí listo.`,
         mood: 'celebrating',
       });
     } catch (e) {
@@ -181,7 +181,7 @@ export function MyList({ gid }: { gid: string }) {
           blocked={!url}
           onBlocked={() =>
             say({
-              text: raw ? 'Eso no es un link po. En la tienda toca Compartir, después Copiar link, y lo pegai en el cuadro.' : 'Primero pega un link en el cuadro de arriba po. Toca Pegar o mantén apretao el cuadro.',
+              text: raw ? 'Esa weá no es un link. En la tienda toca Compartir, después Copiar link, y lo pegai en el cuadro.' : 'Primero pega un link en el cuadro de arriba po. Toca Pegar o mantén apretao el cuadro.',
               mood: 'worried',
               point: '#wish-url',
             })
@@ -303,7 +303,7 @@ export function TheirList({ gid }: { gid: string }) {
     say(
       n
         ? { text: `Esto es lo que le tinca al ${data.receiver.name}. Toca una opción pa abrirla en la tienda.`, point: '.wishes' }
-        : { text: `El ${data.receiver.name} no ha puesto ni una wea todavía. Vuelve en unos días, o sorpréndelo con algo de hasta ${clp(me.group.budget)}.`, mood: 'thinking' },
+        : { text: `El flojo culiao del ${data.receiver.name} no ha puesto ni una weá todavía. Vuelve en unos días, o sorpréndelo con algo de hasta ${clp(me.group.budget)}.`, mood: 'thinking' },
     );
   }, [!!data, !!me]); // eslint-disable-line react-hooks/exhaustive-deps
 
