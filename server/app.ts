@@ -1,5 +1,6 @@
 import { Hono, type Context } from 'hono';
 import type { Store } from './store';
+import { ttsHandler, type TtsConfig } from './tts';
 import { hashPin, randomId, randomInt, seal, unseal, verifyPin } from './crypto';
 
 export interface Participant {
@@ -174,7 +175,7 @@ export async function fetchPreview(rawUrl: string) {
   }
 }
 
-export function createApp(store: Store, secret: string) {
+export function createApp(store: Store, secret: string, tts: TtsConfig = {}) {
   const app = new Hono<Env>().basePath('/api');
 
   /*
@@ -185,6 +186,7 @@ export function createApp(store: Store, secret: string) {
    *   draw:{gid}         sorteo cifrado (se escribe una única vez)
    *   wish:{gid}:{pid}   lista de deseos de cada participante
    *   session:{token}    sesiones (expiran solas)
+ *   tts:{hash}         audio ya generado de cada frase de José Miguel
    */
   const getGroup = async (gid: string) => {
     const raw = await store.get(`group:${gid}`);
@@ -437,6 +439,8 @@ export function createApp(store: Store, secret: string) {
     }
     return c.json(await fetchPreview(u.toString()));
   });
+
+  app.get('/tts', ttsHandler(store, tts));
 
   return app;
 }

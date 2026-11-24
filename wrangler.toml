@@ -7,3 +7,8 @@ binding = "DATA"
 id = "4e95d4275ada4efa95c3234727a920a9"
 
 # El secreto se configura con: npx wrangler secret put APP_SECRET
+
+# Voz con IA (opcional): npx wrangler secret put ELEVENLABS_API_KEY
+# [vars]
+# ELEVENLABS_VOICE_ID = "IKne3meq5aSn9XLyUdCD"
+# TTS_MONTHLY_CHARS = "9000"
