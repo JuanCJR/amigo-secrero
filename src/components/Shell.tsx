@@ -87,6 +87,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="back-spacer" />
           )}
           {meta.steps ? <Stepper step={meta.step || 1} steps={meta.steps} /> : null}
+          {quiet && <JoseSlot kind="mini" className="mini-slot" />}
         </header>
         <section className="band">
           {!meta.hero && <JoseSlot className="band-slot" />}

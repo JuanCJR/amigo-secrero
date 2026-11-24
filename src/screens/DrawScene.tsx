@@ -11,6 +11,7 @@ import { api, ApiError, joseError, type PublicGroup } from '../lib/api';
 import { useAdmin, put } from '../lib/data';
 import { drawGuard, seen, tokens } from '../lib/storage';
 import { AdminGate, shareWhatsApp, useAdminLock } from './Admin';
+import { adminPath } from '../lib/paths';
 
 function HatBack() {
   return (
@@ -56,7 +57,7 @@ function ArmedDraw({ gid }: { gid: string }) {
   useEffect(() => {
     if (armed) return;
     say({ text: 'El sorteo se hace desde el panel, después de confirmar po. Toca Hacer el sorteo cuando estén toos.', mood: 'thinking' });
-    navigate(`/g/${gid}/admin`, { replace: true });
+    navigate(adminPath(gid), { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!armed) return <Screen>{null}</Screen>;
   return <DrawSceneInner gid={gid} />;
@@ -334,12 +335,12 @@ function DrawSceneInner({ gid }: { gid: string }) {
         phase === 'running' ? null : phase === 'done' && group ? (
           <>
             <Btn onClick={() => shareWhatsApp(group)}>Compartir por WhatsApp</Btn>
-            <button className="link-btn small" onClick={() => navigate(`/g/${gid}/admin`)}>
+            <button className="link-btn small" onClick={() => navigate(adminPath(gid))}>
               Volver al panel
             </button>
           </>
         ) : (
-          <Btn onClick={() => navigate(`/g/${gid}/admin`)}>Volver al panel</Btn>
+          <Btn onClick={() => navigate(adminPath(gid))}>Volver al panel</Btn>
         )
       }
     >

@@ -104,6 +104,20 @@ export function joseError(e: unknown): string {
       return 'El PIN es de 4 números no más, weón. Escríbelo de nuevo, sin letras.';
     case 'already_drawn':
       return 'El sorteo ya está hecho, weón, no hay vuelta. Comparte el link pa que cada uno cache el suyo.';
+    case 'bad_username':
+      return 'El usuario tiene que ser de 3 a 24 letras o números, sin espacios, weón. Puede llevar punto, guion o guion bajo.';
+    case 'bad_password':
+      return 'Esa contraseña es muy cortita, hermano. Ponle al menos 8 caracteres pa que no te la saquen.';
+    case 'user_taken':
+      return 'Ese usuario ya lo tiene otro weón. Prueba con otro, o toca "Ya tengo cuenta" si es tuyo.';
+    case 'wrong_login':
+      return left > 0
+        ? `Usuario o contraseña malos, compadre. Te quedan ${left} intentos.`
+        : 'Muchos intentos, weón. Respira y prueba de nuevo en 10 minutos.';
+    case 'need_account':
+      return 'Pa eso tenís que entrar con tu cuenta de organizador, weón. Pon tu usuario y contraseña.';
+    case 'not_owner':
+      return 'Este grupo es de otra cuenta, compadre. Entra con la cuenta que lo creó.';
     case 'no_session':
       return 'Puta, se me olvidó quién chucha erai. Entra de nuevo con tu nombre y tu PIN.';
     case 'not_drawn':

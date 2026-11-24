@@ -4,7 +4,7 @@ App web de amigo secreto pensada para usarse desde el celular. Tiene sorteo, rev
 
 ## Cómo funciona
 
-- **Organizador** (usuario aparte): arma el grupo con los nombres (cada uno recibe un avatar aleatorio), la fecha, el presupuesto y un PIN de organizador. Después comparte **un solo link** con el grupo y hace el sorteo.
+- **Organizador**: crea una cuenta con usuario y contraseña y arma el grupo con los nombres (cada uno recibe un avatar aleatorio), la fecha y el presupuesto. Después comparte **un solo link** con el grupo y hace el sorteo. Su panel vive en `/admin/<grupo>`, aparte del link del grupo. Desde cualquier dispositivo entra a `/organizador` y ve sus grupos.
 - **Participante**: abre el link, toca su cara, crea un PIN de 4 números y el celular lo recuerda. Desde ahí arma su lista de deseos, descubre a su amigo secreto y ve lo que pidió.
 - **Privacidad**: el sorteo se hace en el servidor y se guarda cifrado (AES-GCM). La API le entrega a cada persona solo su propio resultado. Ninguna pantalla, ni siquiera la del organizador, muestra quién le tocó a quién.
 

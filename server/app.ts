@@ -16,8 +16,8 @@ export interface Group {
   date: string; // YYYY-MM-DD
   budget: number; // CLP
   participants: Participant[];
-  adminHash: string;
-  adminSalt: string;
+  /** cuenta del organizador dueña del grupo (usuario en minúsculas) */
+  owner: string;
   drawn: boolean;
   drawnAt?: number;
   draw?: string; // mapa quien→a quién, cifrado
@@ -39,6 +39,23 @@ interface Session {
   role: 'admin' | 'participant';
   pid?: string;
 }
+
+/** Cuenta del organizador: usuario + contraseña, guarda la lista de sus grupos. */
+interface User {
+  username: string; // tal como lo escribió
+  hash: string;
+  salt: string;
+  groups: string[];
+  createdAt: number;
+}
+interface UserSession {
+  role: 'organizer';
+  uid: string; // usuario en minúsculas
+}
+
+const userKey = (u: unknown) => (typeof u === 'string' ? u.trim().toLowerCase() : '');
+const isUsername = (u: string) => /^[a-z0-9._-]{3,24}$/.test(u);
+const isPassword = (p: unknown): p is string => typeof p === 'string' && p.length >= 8 && p.length <= 100;
 
 const SESSION_TTL = 60 * 60 * 24 * 200;
 /** El panel del organizador nunca queda abierto mucho tiempo. */
@@ -180,11 +197,12 @@ export function createApp(store: Store, secret: string) {
   /*
    * Modelo de datos (una clave por cosa que escribe una sola persona, para que
    * escrituras simultáneas no se pisen):
-   *   group:{gid}        datos del organizador (nombres, fecha, presupuesto, PIN admin)
+   *   group:{gid}        datos del organizador (nombres, fecha, presupuesto, cuenta dueña)
    *   pin:{gid}:{pid}    PIN de cada participante (lo escribe solo esa persona)
    *   draw:{gid}         sorteo cifrado (se escribe una única vez)
    *   wish:{gid}:{pid}   lista de deseos de cada participante
    *   session:{token}    sesiones (expiran solas)
+   *   user:{usuario}     cuenta del organizador (contraseña con hash y sus grupos)
    */
   const getGroup = async (gid: string) => {
     const raw = await store.get(`group:${gid}`);
@@ -194,15 +212,11 @@ export function createApp(store: Store, secret: string) {
       Promise.all(g.participants.map((p) => store.get(`pin:${gid}:${p.id}`))),
       store.get(`draw:${gid}`),
     ]);
-    const migrations: Promise<void>[] = [];
     g.participants.forEach((p, i) => {
       const pin = pins[i] ? (JSON.parse(pins[i]!) as { hash: string; salt: string }) : null;
       if (pin) {
         p.pinHash = pin.hash;
         p.pinSalt = pin.salt;
-      } else if (p.pinHash && p.pinSalt) {
-        // formato antiguo (PIN dentro del grupo): migrar a su propia clave
-        migrations.push(store.put(`pin:${gid}:${p.id}`, JSON.stringify({ hash: p.pinHash, salt: p.pinSalt })));
       }
     });
     if (drawRaw) {
@@ -210,10 +224,7 @@ export function createApp(store: Store, secret: string) {
       g.drawn = true;
       g.draw = d.sealed;
       g.drawnAt = d.at;
-    } else if (g.drawn && g.draw) {
-      migrations.push(store.put(`draw:${gid}`, JSON.stringify({ sealed: g.draw, at: g.drawnAt ?? Date.now() })));
     }
-    if (migrations.length) await Promise.all(migrations);
     return g;
   };
   /** Guarda solo lo que escribe el organizador (nunca PINs ni el sorteo). */
@@ -221,6 +232,32 @@ export function createApp(store: Store, secret: string) {
     const { draw: _d, drawn: _dn, drawnAt: _da, ...rest } = g;
     const clean = { ...rest, participants: g.participants.map(({ pinHash: _h, pinSalt: _s, ...p }) => p) };
     return store.put(`group:${g.id}`, JSON.stringify(clean));
+  };
+  const getUser = async (uid: string) => {
+    const raw = uid ? await store.get(`user:${uid}`) : null;
+    return raw ? (JSON.parse(raw) as User) : null;
+  };
+  const saveUser = (uid: string, u: User) => store.put(`user:${uid}`, JSON.stringify(u));
+  const newUserSession = async (uid: string) => {
+    const token = randomId(24);
+    await store.put(`session:${token}`, JSON.stringify({ role: 'organizer', uid } satisfies UserSession), { ttl: SESSION_TTL });
+    return token;
+  };
+  /** Sesión de cuenta (opcional): devuelve el usuario o null. */
+  const readUserSession = async (c: Context<Env>) => {
+    const token = (c.req.header('authorization') || '').replace(/^Bearer\s+/i, '');
+    const raw = token ? await store.get(`session:${token}`) : null;
+    if (!raw) return null;
+    const s = JSON.parse(raw) as UserSession | Session;
+    return s.role === 'organizer' ? { uid: (s as UserSession).uid, token } : null;
+  };
+  const linkGroup = async (uid: string, gid: string) => {
+    const u = await getUser(uid);
+    if (!u) return;
+    if (!u.groups.includes(gid)) {
+      u.groups.unshift(gid);
+      await saveUser(uid, u);
+    }
   };
   const newSession = async (s: Session) => {
     const token = randomId(24);
@@ -251,6 +288,7 @@ export function createApp(store: Store, secret: string) {
     const raw = token ? await store.get(`session:${token}`) : null;
     if (!raw) throw new ApiError(401, 'no_session');
     const s = JSON.parse(raw) as Session;
+    if ((s.role as string) === 'organizer' || !s.gid) throw new ApiError(401, 'no_session');
     if (role && s.role !== role) throw new ApiError(403, 'forbidden');
     const g = await getGroup(s.gid);
     if (s.role === 'participant' && !g.participants.some((p) => p.id === s.pid)) throw new ApiError(401, 'no_session');
@@ -259,23 +297,74 @@ export function createApp(store: Store, secret: string) {
     await next();
   };
 
+  // ---------- cuentas de organizador ----------
+  app.post('/auth/register', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const uid = userKey(body.username);
+    if (!isUsername(uid)) throw new ApiError(400, 'bad_username');
+    if (!isPassword(body.password)) throw new ApiError(400, 'bad_password');
+    if (await getUser(uid)) throw new ApiError(409, 'user_taken');
+    const { hash, salt } = await hashPin(body.password);
+    await saveUser(uid, { username: String(body.username).trim(), hash, salt, groups: [], createdAt: Date.now() });
+    return c.json({ token: await newUserSession(uid), user: { username: String(body.username).trim() } });
+  });
+
+  app.post('/auth/login', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const uid = userKey(body.username);
+    const lockKey = `login:${uid}`;
+    const n = await checkLock(lockKey);
+    const u = isUsername(uid) ? await getUser(uid) : null;
+    if (!u || typeof body.password !== 'string' || !(await verifyPin(body.password, u.salt, u.hash))) {
+      const left = await addFail(lockKey, n);
+      return c.json({ error: 'wrong_login', left }, 401);
+    }
+    await store.delete(`fail:${lockKey}`);
+    return c.json({ token: await newUserSession(uid), user: { username: u.username } });
+  });
+
+  app.post('/auth/logout', async (c) => {
+    const s = await readUserSession(c);
+    if (s) await store.delete(`session:${s.token}`);
+    return c.json({ ok: true });
+  });
+
+  /** La cuenta y sus grupos: así el organizador los ve desde cualquier dispositivo. */
+  app.get('/account', async (c) => {
+    const s = await readUserSession(c);
+    if (!s) throw new ApiError(401, 'no_session');
+    const u = await getUser(s.uid);
+    if (!u) throw new ApiError(401, 'no_session');
+    const groups = (
+      await Promise.all(
+        u.groups.map((gid) =>
+          getGroup(gid)
+            .then((g) => ({ id: g.id, title: g.title, date: g.date, drawn: g.drawn, people: g.participants.length }))
+            .catch(() => null),
+        ),
+      )
+    ).filter(Boolean);
+    return c.json({ user: { username: u.username }, groups });
+  });
+
   // ---------- grupo (organizador) ----------
   app.post('/groups', async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const settings = validateSettings(body);
     const names = validateNames(body.participants);
-    if (!isPin(body.adminPin)) throw new ApiError(400, 'bad_pin');
-    const { hash, salt } = await hashPin(body.adminPin);
+    // el grupo queda en la cuenta del organizador
+    const owner = await readUserSession(c);
+    if (!owner || !(await getUser(owner.uid))) throw new ApiError(401, 'need_account');
     const g: Group = {
       id: randomId(6),
       ...settings,
       participants: names.map((p) => ({ id: randomId(6), name: p.name, avatar: p.avatar || randomId(6) })),
-      adminHash: hash,
-      adminSalt: salt,
+      owner: owner.uid,
       drawn: false,
       createdAt: Date.now(),
     };
     await saveGroup(g);
+    await linkGroup(owner.uid, g.id);
     const token = await newSession({ gid: g.id, role: 'admin' });
     return c.json({ group: publicGroup(g), token });
   });
@@ -284,14 +373,10 @@ export function createApp(store: Store, secret: string) {
 
   app.post('/groups/:gid/admin', async (c) => {
     const g = await getGroup(c.req.param('gid'));
-    const { pin } = await c.req.json().catch(() => ({}));
-    const lockKey = `${g.id}:admin`;
-    const n = await checkLock(lockKey);
-    if (!isPin(pin) || !(await verifyPin(pin, g.adminSalt, g.adminHash))) {
-      const left = await addFail(lockKey, n);
-      return c.json({ error: 'wrong_pin', left }, 401);
-    }
-    await store.delete(`fail:${lockKey}`);
+    const user = await readUserSession(c);
+    // solo la cuenta dueña del grupo entra al panel
+    if (!user) throw new ApiError(401, 'need_account');
+    if (user.uid !== g.owner) throw new ApiError(403, 'not_owner');
     return c.json({ token: await newSession({ gid: g.id, role: 'admin' }) });
   });
 
