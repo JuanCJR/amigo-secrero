@@ -5,10 +5,6 @@ import { ASSETS } from './assets.gen';
 interface Env {
   DATA: any; // KVNamespace
   APP_SECRET: string;
-  ELEVENLABS_API_KEY?: string;
-  ELEVENLABS_VOICE_ID?: string;
-  ELEVENLABS_MODEL?: string;
-  TTS_MONTHLY_CHARS?: string;
 }
 
 const decoded = new Map<string, ArrayBuffer>();
@@ -36,12 +32,7 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       // sin secreto no se puede cifrar el sorteo: mejor no atender
       if (!env.APP_SECRET || env.APP_SECRET.length < 32) return Response.json({ error: 'server' }, { status: 503 });
-      return createApp(createKVStore(env.DATA), env.APP_SECRET, {
-        apiKey: env.ELEVENLABS_API_KEY,
-        voiceId: env.ELEVENLABS_VOICE_ID,
-        model: env.ELEVENLABS_MODEL,
-        monthlyChars: env.TTS_MONTHLY_CHARS ? Number(env.TTS_MONTHLY_CHARS) : undefined,
-      }).fetch(req, env, ctx as any);
+      return createApp(createKVStore(env.DATA), env.APP_SECRET).fetch(req, env, ctx as any);
     }
     // archivos estáticos; cualquier otra ruta es la app (SPA)
     const path = ASSETS[url.pathname] ? url.pathname : '/index.html';
