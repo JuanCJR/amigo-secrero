@@ -40,9 +40,9 @@ const BASE_W = 120;
 const BASE_H = 150;
 
 const QUIPS = [
-  '¡Jaja, cosquillas no! Sigue con el botón grande de abajo.',
-  'Oye, cuidado que me apagas. Tú dale nomás, yo te guío.',
-  'Tranqui, aquí estoy. Cuando quieras, toca el botón de abajo.',
+  '¡Jajaja, cosquillas no po, loco! Dale con el botón grande de abajo.',
+  'Oe, cuidao que me apagai. Tú dale nomás, yo te llevo, cachai.',
+  'Tranqui, hermano, aquí ando. Cuando querai, toca el botón de abajo.',
 ];
 
 export function JoseProvider({ children }: { children: ReactNode }) {
@@ -200,7 +200,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
         if (!c || typing.current) return armSleep();
         sleeping.current = true;
         c.setMood('sleeping');
-        setMsg({ id: ++idCounter.current, text: 'Zzz… me quedé pegado. Toca la pantalla cuando quieras seguir.', keepMood: true });
+        setMsg({ id: ++idCounter.current, text: 'Zzz… me quedé pegao, loco. Toca la pantalla cuando querai seguir.', keepMood: true });
       }, SLEEP_MS);
     };
     const onActivity = (e: Event) => {

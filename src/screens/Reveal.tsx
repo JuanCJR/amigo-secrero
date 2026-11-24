@@ -141,16 +141,16 @@ export function Reveal({ gid }: { gid: string }) {
       gsap.set(q('.hold-ring circle.fill'), { drawSVG: '0%' });
       if (motion.reduced) {
         setPhase('ready');
-        jose.say({ text: repeat ? 'Toca el regalo para volver a verlo.' : 'Toca el regalo para abrirlo y descubrir a tu amigo secreto.', point: '.gift' });
+        jose.say({ text: repeat ? 'Toca el regalo pa verlo otra vez.' : 'Toca el regalo pa abrirlo y cachar quién es tu amigo secreto.', point: '.gift' });
         return;
       }
       if (repeat) {
         gsap.from(g, { scale: 0, rotation: -30, duration: 0.6, ease: 'back.out(2)' });
         setPhase('ready');
-        jose.say({ text: 'Ya lo abriste antes, pero dale de nuevo: toca el regalo.', point: '.gift' });
+        jose.say({ text: 'Ya lo abriste antes, pero dale otra vez no más: toca el regalo.', point: '.gift' });
         return;
       }
-      jose.say({ text: 'Te traje algo. Déjame ponerlo aquí…', keepMood: true });
+      jose.say({ text: 'Te traje algo, hermanito. Déjame ponerlo aquí…', keepMood: true });
       gsap.delayedCall(0.8, () => {
         const ctrl = jose.ctrl();
         if (!ctrl) return;
@@ -163,7 +163,7 @@ export function Reveal({ gid }: { gid: string }) {
           onComplete: () => {
             setPhase('ready');
             ctrl.setMood('idle');
-            jose.say({ text: 'Mantén apretado el regalo hasta que se llene el círculo. Yo no miro, palabra de cogollo.', point: '.gift' });
+            jose.say({ text: 'Mantén apretao el regalo hasta que se llene el círculo. Yo no miro, palabra de choro.', point: '.gift' });
           },
         });
         tl.set(g, { opacity: 1 })
@@ -205,7 +205,7 @@ export function Reveal({ gid }: { gid: string }) {
       setPhase('done');
       startAmbient();
       if (pid) seen.mark(`reveal:${gid}:${pid}`);
-      jose.say({ text: `¡Te tocó ${name}! Toca el botón para ver qué le gustaría.`, mood: 'celebrating', point: '.screen-cta .btn' });
+      jose.say({ text: `¡Te tocó el ${name}, loco! Toca el botón pa ver qué le tinca.`, mood: 'celebrating', point: '.screen-cta .btn' });
     };
     if (motion.reduced) {
       gsap.to(q('.gift-lid, .gift-box, .hold-ring'), { opacity: 0, duration: 0.25 });
@@ -300,7 +300,7 @@ export function Reveal({ gid }: { gid: string }) {
     gsap.to(shake.current, { amp: 0, duration: 0.3 });
     gsap.to(q('.gift-scale, .hold-ring'), { scale: 1, duration: 0.8, ease: 'elastic.out(1.2,0.3)' });
     gsap.to(gift.current, { rotation: 0, x: 0, duration: 0.6, ease: 'elastic.out(1,0.3)', delay: 0.3 });
-    jose.say({ text: '¡Casi! Mantenlo apretado un poquito más, hasta que se llene el círculo.', point: '.gift' });
+    jose.say({ text: '¡Casi, casi! Mantenlo apretao un poquito más, hasta que se llene el círculo.', point: '.gift' });
   };
 
   const skip = () => {

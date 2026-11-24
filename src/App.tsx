@@ -17,7 +17,7 @@ function NotFound() {
   useScreenMeta({ back: '/' });
   const { say } = useJose();
   const { navigate } = useRouter();
-  useEffect(() => say({ text: 'Uy, me perdí: esta página no existe. Toca el botón y te llevo al inicio.', mood: 'worried' }), [say]);
+  useEffect(() => say({ text: 'Chuta, me perdí, hermanito: esta página no existe po. Toca el botón y te llevo al inicio al tiro.', mood: 'worried' }), [say]);
   return <Screen cta={<Btn onClick={() => navigate('/')}>Ir al inicio</Btn>}>{null}</Screen>;
 }
 
