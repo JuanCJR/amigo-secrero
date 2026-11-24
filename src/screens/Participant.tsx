@@ -149,9 +149,9 @@ export function Pin({ gid, pid }: { gid: string; pid: string }) {
 
 const TOUR = [
   { text: '', point: null },
-  { text: 'Primero, arma tu lista de deseos con links de las weás que te tinquen.', point: '[data-flip-id="card-list"]' },
-  { text: 'Cuando el organizador haga el sorteo, aquí cachai a quién le regalai.', point: '[data-flip-id="card-reveal"]' },
-  { text: 'Y aquí ves lo que pidió, pa achuntarle con el regalo. ¡Ya, partamos por tu lista!', point: '[data-flip-id="card-their"]' },
+  { text: 'Primero, arma tu lista de deseos con links de las weás que te tinquen. Toca Siguiente abajo.', point: '[data-flip-id="card-list"]' },
+  { text: 'Cuando el organizador haga el sorteo, aquí cachai a quién le regalai. Dale a Siguiente.', point: '[data-flip-id="card-reveal"]' },
+  { text: 'Y aquí ves lo que pidió, pa achuntarle con el regalo. Toca Armar mi lista y partimos.', point: '[data-flip-id="card-their"]' },
 ];
 
 export function Home({ gid }: { gid: string }) {
@@ -210,7 +210,7 @@ export function Home({ gid }: { gid: string }) {
     wasDrawn.current = drawn;
     if (!seen.has(tourKey) && tour === null) {
       setTour(0);
-      say({ text: `¡Wena, ${data.me.name}, weón! Te explico cómo es la weá en tres pasos, tranqui.`, mood: 'idle' });
+      say({ text: `¡Wena, ${data.me.name}, weón! Te explico cómo es la weá en tres pasos, tranqui. Toca Siguiente pa empezar.`, mood: 'idle' });
       return;
     }
     if (tour === null) {
@@ -245,7 +245,7 @@ export function Home({ gid }: { gid: string }) {
     <Screen
       cta={
         <>
-          <Btn onClick={tour !== null ? advanceTour : () => navigate(n.to)}>{tour !== null ? (tour === TOUR.length - 1 ? 'Armar mi lista' : 'Siguiente') : n.label}</Btn>
+          <Btn className={tour !== null ? 'is-nudge' : undefined} onClick={tour !== null ? advanceTour : () => navigate(n.to)}>{tour !== null ? (tour === TOUR.length - 1 ? 'Armar mi lista' : 'Siguiente') : n.label}</Btn>
           <button
             className="link-btn small"
             onClick={() => {

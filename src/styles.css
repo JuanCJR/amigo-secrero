@@ -1442,3 +1442,23 @@ flex: none;
     transition: opacity 0.2s;
   }
 }
+
+/* botón que hay que tocar para seguir (recorrido guiado): late suave */
+.btn.is-nudge {
+  animation: nudge 1.6s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 71, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 212, 71, 0.85);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn.is-nudge {
+    animation: none;
+    box-shadow: 0 0 0 4px var(--gold);
+  }
+}
