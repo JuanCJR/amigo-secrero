@@ -86,6 +86,20 @@ export const tokens = {
   clearParticipant: (gid: string) => ls.del(`p:${gid}`),
   clearAdmin: (gid: string) => tab.del(`a:${gid}`),
 };
+/** Cuenta del organizador: queda guardada en el dispositivo hasta cerrar sesión. */
+export const account = {
+  token: () => ls.get('acct'),
+  username: () => ls.get('acct:user'),
+  set: (token: string, username: string) => {
+    ls.set('acct', token);
+    ls.set('acct:user', username);
+  },
+  clear: () => {
+    ls.del('acct');
+    ls.del('acct:user');
+  },
+};
+
 export const seen = {
   has: (k: string) => ls.get(`seen:${k}`) === '1',
   mark: (k: string) => ls.set(`seen:${k}`, '1'),

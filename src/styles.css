@@ -1473,3 +1473,44 @@ flex: none;
 .topbar .stepper + .mini-slot {
   margin-left: 4px;
 }
+
+/* ---------- cuenta del organizador ---------- */
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.account-form .btn {
+  margin-top: 10px;
+}
+.account-form .link-btn {
+  align-self: center;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--gold);
+}
+.account-other {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lock-btn {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px auto 0;
+}
+.organizer-link {
+  display: block;
+  margin: 18px auto 0;
+}

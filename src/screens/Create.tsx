@@ -6,13 +6,13 @@ import { Screen } from '../components/Screen';
 import { Btn } from '../components/Btn';
 import { Field } from '../components/Field';
 import { NamesEditor } from '../components/NamesEditor';
-import { PinInput, type PinHandle } from '../components/PinInput';
 import { clearDraft, getDraft, saveDraft, type Draft } from '../lib/draft';
 import { api, clp, joseError, type PublicGroup } from '../lib/api';
-import { rememberGroup, tokens } from '../lib/storage';
+import { account, rememberGroup, tokens } from '../lib/storage';
 import { put } from '../lib/data';
 import { confetti } from '../components/confetti';
 import { adminPath } from '../lib/paths';
+import { AccountForm } from '../components/AccountForm';
 
 function useDraft(): [Draft, (d: Partial<Draft>) => void] {
   const [d, setD] = useState(getDraft);
@@ -147,82 +147,97 @@ export function CreateDetails() {
   );
 }
 
-export function CreatePin() {
+export function CreateAccount() {
   useScreenMeta({ back: '/crear/2', step: 3, steps: 4 });
   const { navigate } = useRouter();
   const { say } = useJose();
-  const [pin, setPin] = useState('');
-  const [first, setFirst] = useState<string | null>(null);
+  const [user, setUser] = useState(() => account.username());
   const [busy, setBusy] = useState(false);
-  const pinRef = useRef<PinHandle>(null);
-  useSay({ text: 'Inventa un PIN de 4 números pa volver a entrar como organizador. Ni con ese se ve el sorteo: nadie lo puede sapear.', mood: 'idle' });
+  useSay(
+    user
+      ? { text: `Lo guardo en tu cuenta, ${user}. Toca el botón y armo el amigo secreto.`, point: '.screen-cta .btn' }
+      : {
+          text: 'Crea tu cuenta de organizador con un usuario y una contraseña. Así entrai a tu grupo desde cualquier celular, y ni así ves el sorteo.',
+          point: '#acct-user',
+        },
+  );
 
-  const submit = async (value: string) => {
-    if (!first) {
-      setFirst(value);
-      setPin('');
-      say({ text: 'Bien ahí. Ahora escríbelo otra vez, pa estar seguros.', point: '.pin' });
-      return;
-    }
-    if (value !== first) {
-      pinRef.current?.shake();
-      setFirst(null);
-      setPin('');
-      say({ text: 'No calzan, weón, la cagaste. Escribe un PIN nuevo desde cero.', mood: 'worried' });
-      return;
-    }
+  const create = async () => {
     const d = getDraft();
     setBusy(true);
     say({ text: 'Armando toa la weá… dame un segundo, no me apurí, culiao.', mood: 'thinking' });
     try {
       const res = await api<{ group: PublicGroup; token: string }>('/groups', {
+        token: account.token(),
         body: {
           title: d.title,
           date: d.date,
           budget: d.budget,
-          adminPin: value,
           participants: d.names.map((x) => ({ name: x.name, avatar: x.avatar })),
         },
       });
-      await pinRef.current?.success();
       tokens.setAdmin(res.group.id, res.token);
       rememberGroup({ gid: res.group.id, role: 'admin', title: res.group.title });
       put(`group:${res.group.id}`, res.group);
       clearDraft();
-      const r = document.querySelector('.pin')?.getBoundingClientRect();
+      const r = document.querySelector('.title')?.getBoundingClientRect();
       if (r) confetti(r.left + r.width / 2, r.top, { count: 50 });
       navigate(adminPath(res.group.id), { replace: true });
     } catch (e) {
       setBusy(false);
-      setFirst(null);
-      setPin('');
-      pinRef.current?.shake();
-      say({ text: joseError(e), mood: 'worried' });
       const code = (e as { code?: string }).code;
+      if (code === 'need_account') {
+        // la sesión venció: volver a pedir la cuenta
+        account.clear();
+        setUser(null);
+      }
+      say({ text: joseError(e), mood: 'worried' });
       if (code === 'bad_date' || code === 'bad_budget') navigate('/crear/2');
       if (code === 'too_few' || code === 'duplicate_name' || code === 'empty_name') navigate('/crear/1');
     }
   };
 
+  if (!user)
+    return (
+      <Screen>
+        <h1 className="title" data-anim="drop">
+          Tu cuenta de organizador
+        </h1>
+        <AccountForm
+          submitLabel={(m) => (m === 'register' ? 'Crear cuenta y grupo' : 'Entrar y crear grupo')}
+          onDone={async (u) => {
+            setUser(u);
+            await create();
+          }}
+        />
+      </Screen>
+    );
+
   return (
     <Screen
       cta={
-        <Btn
-          busy={busy}
-          blocked={pin.length < 4}
-          onBlocked={() => say({ text: 'Ya po, escribe los 4 números del PIN en las casillas.', point: '.pin', mood: 'worried' })}
-          onClick={() => submit(pin)}
-        >
-          {first ? 'Crear amigo secreto' : 'Siguiente'}
-        </Btn>
+        <>
+          <Btn busy={busy} onClick={create}>
+            Crear amigo secreto
+          </Btn>
+          <button
+            className="link-btn small"
+            onClick={() => {
+              account.clear();
+              setUser(null);
+            }}
+          >
+            No soy {user}, usar otra cuenta
+          </button>
+        </>
       }
     >
       <h1 className="title" data-anim="drop">
-        {first ? 'Repite tu PIN' : 'Tu PIN de organizador'}
+        Todo listo
       </h1>
-      <div data-anim="pop">
-        <PinInput ref={pinRef} value={pin} onChange={setPin} onDone={submit} label="PIN de organizador, 4 números" autoFocus />
-      </div>
+      <p className="fine" data-anim="pop">
+        El grupo queda guardado en tu cuenta <strong>{user}</strong>. Lo vas a encontrar en Mis grupos desde cualquier celular.
+      </p>
     </Screen>
   );
 }

@@ -6,11 +6,12 @@ import { Chip, Screen } from '../components/Screen';
 import { Btn } from '../components/Btn';
 import { Avatar } from '../components/Avatar';
 import { Dialog } from '../components/Dialog';
-import { PinInput, type PinHandle } from '../components/PinInput';
 import { NamesEditor, type NameEntry } from '../components/NamesEditor';
 import { api, clp, daysUntil, joseError, prettyDate, type PublicGroup } from '../lib/api';
 import { isAuthError, useAdmin, useGroup, put } from '../lib/data';
-import { drawGuard, rememberGroup, tokens } from '../lib/storage';
+import { account, drawGuard, rememberGroup, tokens } from '../lib/storage';
+import { AccountForm } from '../components/AccountForm';
+import { logout } from './Organizer';
 import { gsap, motion } from '../lib/gsap';
 import { Icon } from '../components/Icon';
 import { adminPath } from '../lib/paths';
@@ -22,48 +23,77 @@ export function shareWhatsApp(g: PublicGroup) {
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
 }
 
+/** Entrada al panel: la cuenta dueña del grupo entra sola; si no hay sesión, se pide usuario y contraseña. */
 function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
   useScreenMeta({ back: '/', backLabel: 'Volver al inicio' });
   const { say } = useJose();
-  const [pin, setPin] = useState('');
-  const [busy, setBusy] = useState(false);
-  const ref = useRef<PinHandle>(null);
+  const { navigate } = useRouter();
   const { data: group } = useGroup(gid);
-  useEffect(() => {
-    say({ text: 'Este panel es del organizador, weón, no cualquier sapo entra. Pon tu PIN de organizador.', point: '.pin' });
-  }, [say]);
-  const submit = async (v: string) => {
-    setBusy(true);
+  const [state, setState] = useState<'checking' | 'login' | 'other'>(() => (account.token() ? 'checking' : 'login'));
+
+  const enter = useCallback(async () => {
     try {
-      const r = await api<{ token: string }>(`/groups/${gid}/admin`, { body: { pin: v } });
+      const r = await api<{ token: string }>(`/groups/${gid}/admin`, { method: 'POST', token: account.token() });
       tokens.setAdmin(gid, r.token);
-      await ref.current?.success();
       onDone();
     } catch (e) {
-      ref.current?.shake();
-      setPin('');
+      const code = (e as { code?: string }).code;
+      if (code === 'not_owner') {
+        setState('other');
+        say({ text: joseError(e), mood: 'worried' });
+        return;
+      }
+      if (code === 'need_account' || code === 'no_session') {
+        account.clear();
+        setState('login');
+        say({ text: 'Este panel es del organizador, weón, no cualquier sapo entra. Pon tu usuario y contraseña.', point: '#acct-user' });
+        return;
+      }
+      setState('login');
       say({ text: joseError(e), mood: 'worried' });
-    } finally {
-      setBusy(false);
     }
-  };
+  }, [gid, onDone, say]);
+
+  useEffect(() => {
+    if (account.token()) void enter();
+    else say({ text: 'Este panel es del organizador, weón, no cualquier sapo entra. Pon tu usuario y contraseña.', point: '#acct-user' });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
-    <Screen cta={<Btn busy={busy} blocked={pin.length < 4} onBlocked={() => say({ text: 'Ya po, weón, escribe los 4 números de tu PIN.', mood: 'worried', point: '.pin' })} onClick={() => submit(pin)}>Entrar</Btn>}>
+    <Screen>
       <h1 className="title" data-anim="drop">
         {group?.title || 'Panel del organizador'}
       </h1>
-      <div data-anim="pop">
-        <PinInput ref={ref} value={pin} onChange={setPin} onDone={submit} label="PIN de organizador" autoFocus />
-      </div>
+      {state === 'checking' && <div className="loading">Abriendo el panel…</div>}
+      {state === 'login' && <AccountForm initialMode="login" onDone={() => enter()} />}
+      {state === 'other' && (
+        <div className="account-other" data-anim="pop">
+          <p className="fine">
+            Entraste como <strong>{account.username()}</strong>, pero este grupo es de otra cuenta.
+          </p>
+          <Btn
+            variant="soft"
+            onClick={async () => {
+              await logout();
+              setState('login');
+            }}
+          >
+            Entrar con otra cuenta
+          </Btn>
+          <button className="link-btn" onClick={() => navigate('/organizador')}>
+            Ver mis grupos
+          </button>
+        </div>
+      )}
     </Screen>
   );
 }
 
 const LockCtx = createContext<() => void>(() => {});
-/** Cierra el panel (borra la sesión de organizador y vuelve a pedir el PIN). */
+/** Vuelve a validar la entrada al panel (p. ej. si la sesión del panel venció). */
 export const useAdminLock = () => useContext(LockCtx);
 
-/** Toda pantalla de administración pasa por aquí: sin sesión válida, se pide el PIN. */
+/** Toda pantalla de administración pasa por aquí: sin sesión válida, se pide la cuenta. */
 export function AdminGate({ gid, children }: { gid: string; children: ReactNode }) {
   const [ok, setOk] = useState(() => !!tokens.admin(gid));
   const lock = useCallback(() => {
@@ -210,16 +240,21 @@ function AdminPanel({ gid }: { gid: string }) {
           <Icon name="edit" /> Editar participantes
         </Btn>
       )}
-      <button
-        className="link-btn small lock-btn"
-        data-anim="pop"
-        onClick={() => {
-          lock();
-          navigate('/');
-        }}
-      >
-        <Icon name="lock" size={16} /> Cerrar el panel
-      </button>
+      <div className="lock-btn" data-anim="pop">
+        <button className="link-btn small" onClick={() => navigate('/organizador')}>
+          Mis grupos
+        </button>
+        <button
+          className="link-btn small"
+          onClick={async () => {
+            tokens.clearAdmin(gid);
+            await logout();
+            navigate('/');
+          }}
+        >
+          <Icon name="lock" size={16} /> Cerrar sesión
+        </button>
+      </div>
 
       <Dialog open={confirm} onClose={() => setConfirm(false)}>
         <p className="dialog-text">¿Hacemos el sorteo con estas {g.participants.length} personas?</p>

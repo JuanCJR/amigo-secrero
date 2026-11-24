@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { Router, match, useRouter } from './lib/router';
-import { adminPath } from './lib/paths';
 import { JoseProvider, useJose } from './jose/JoseProvider';
 import { Shell, useScreenMeta } from './components/Shell';
 import { Screen } from './components/Screen';
 import { Btn } from './components/Btn';
 import { Welcome } from './screens/Welcome';
-import { CreateDetails, CreateNames, CreatePin } from './screens/Create';
+import { CreateAccount, CreateDetails, CreateNames } from './screens/Create';
+import { Organizer } from './screens/Organizer';
 import { Admin, AdminEdit } from './screens/Admin';
 import { DrawScene } from './screens/DrawScene';
 import { Home, Join, Pin } from './screens/Participant';
@@ -21,25 +21,16 @@ function NotFound() {
   return <Screen cta={<Btn onClick={() => navigate('/')}>Ir al inicio</Btn>}>{null}</Screen>;
 }
 
-function Redirect({ to }: { to: string }) {
-  const { navigate } = useRouter();
-  useEffect(() => navigate(to, { replace: true }), [to, navigate]);
-  return null;
-}
-
 function route(path: string) {
   let m: Record<string, string> | null;
   if (path === '/' || path === '') return <Welcome />;
   if (match('/crear/1', path)) return <CreateNames />;
   if (match('/crear/2', path)) return <CreateDetails />;
-  if (match('/crear/3', path)) return <CreatePin />;
+  if (match('/crear/3', path)) return <CreateAccount />;
+  if (path === '/organizador') return <Organizer />;
   if ((m = match('/admin/:gid', path))) return <Admin gid={m.gid} />;
   if ((m = match('/admin/:gid/editar', path))) return <AdminEdit gid={m.gid} />;
   if ((m = match('/admin/:gid/sorteo', path))) return <DrawScene gid={m.gid} />;
-  // dirección antigua del panel: redirige al prefijo reservado
-  if ((m = match('/g/:gid/admin', path))) return <Redirect to={adminPath(m.gid)} />;
-  if ((m = match('/g/:gid/admin/editar', path))) return <Redirect to={adminPath(m.gid, 'editar')} />;
-  if ((m = match('/g/:gid/admin/sorteo', path))) return <Redirect to={adminPath(m.gid)} />;
   if ((m = match('/g/:gid', path))) return <Join gid={m.gid} />;
   if ((m = match('/g/:gid/pin/:pid', path))) return <Pin gid={m.gid} pid={m.pid} />;
   if ((m = match('/g/:gid/inicio', path))) return <Home gid={m.gid} />;

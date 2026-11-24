@@ -5,13 +5,15 @@ import { useRouter } from '../lib/router';
 import { useScreenMeta } from '../components/Shell';
 import { Screen } from '../components/Screen';
 import { Btn } from '../components/Btn';
-import { knownGroups, seen } from '../lib/storage';
+import { account, knownGroups, seen } from '../lib/storage';
 import { adminPath } from '../lib/paths';
 
 export function Welcome() {
   useScreenMeta({});
   const { navigate } = useRouter();
-  const groups = knownGroups();
+  const user = account.username();
+  // con cuenta, los grupos de organizador se ven en "Mis grupos" (desde cualquier dispositivo)
+  const groups = knownGroups().filter((g) => !(user && g.role === 'admin'));
   const first = !seen.has('hello');
   useSay(
     groups.length
@@ -81,6 +83,9 @@ export function Welcome() {
           ))}
         </div>
       )}
+      <button className="link-btn organizer-link" data-anim="pop" onClick={() => navigate('/organizador')}>
+        {user ? `Mis grupos de organizador (${user})` : 'Soy organizador, entrar a mis grupos'}
+      </button>
     </Screen>
   );
 }
