@@ -1416,3 +1416,29 @@ flex: none;
   background: var(--gold);
   box-shadow: inset 0 0 0 3px var(--dark-text);
 }
+
+/* ---------- José en silencio: aviso que baja desde arriba sin mover el contenido ---------- */
+.app.is-quiet .band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(60px + env(safe-area-inset-top));
+  z-index: 30;
+  padding-top: 8px;
+  background: var(--ink-2);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+  transform: translateY(-130%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.2s;
+}
+.app.is-quiet.jose-present .band {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.is-quiet .band {
+    transition: opacity 0.2s;
+  }
+}

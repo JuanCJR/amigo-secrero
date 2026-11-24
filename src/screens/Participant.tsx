@@ -164,7 +164,8 @@ export function Home({ gid }: { gid: string }) {
   const drawn = !!data?.group.drawn;
   const wishes = data?.wishlist.length ?? 0;
   const step = !wishes ? 2 : drawn && !revealed ? 3 : revealed ? 4 : 2;
-  useScreenMeta({ back: null, step, steps: 4 });
+  // José guía el recorrido la primera vez; después el inicio queda limpio (mientras carga, también)
+  useScreenMeta({ back: null, step, steps: 4, joseQuiet: pid ? seen.has(`tour:${gid}:${pid}`) && tour === null : true });
   const wasDrawn = useRef<boolean | null>(null);
 
   useEffect(() => {

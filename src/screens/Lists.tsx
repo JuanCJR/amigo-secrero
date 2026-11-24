@@ -33,7 +33,7 @@ export function extractUrl(raw: string): string | null {
 type Preview = { site: string; title?: string; image?: string };
 
 export function MyList({ gid }: { gid: string }) {
-  useScreenMeta({ back: `/g/${gid}/inicio`, step: 2, steps: 4 });
+  useScreenMeta({ back: `/g/${gid}/inicio`, step: 2, steps: 4, joseOnce: `mylist:${gid}` });
   const { navigate } = useRouter();
   const { say, react, setMood } = useJose();
   const { data, error, mutate } = useMe(gid);
@@ -285,7 +285,7 @@ export function MyList({ gid }: { gid: string }) {
 }
 
 export function TheirList({ gid }: { gid: string }) {
-  useScreenMeta({ back: `/g/${gid}/inicio`, step: 4, steps: 4 });
+  useScreenMeta({ back: `/g/${gid}/inicio`, step: 4, steps: 4, joseOnce: `theirlist:${gid}` });
   const { navigate } = useRouter();
   const { say } = useJose();
   const { data: me } = useMe(gid);

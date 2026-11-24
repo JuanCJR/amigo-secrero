@@ -10,6 +10,8 @@ export interface Say {
   point?: string | HTMLElement | null;
   /** no tocar el estado de ánimo (escenas hero lo controlan) */
   keepMood?: boolean;
+  /** mostrarse aunque la pantalla esté en modo silencioso (avisos importantes) */
+  loud?: boolean;
 }
 interface Msg extends Say {
   id: number;
@@ -29,6 +31,15 @@ interface JoseApi {
   holderEl: () => HTMLDivElement | null;
   reposition: (instant?: boolean) => void;
   setTyping: (b: boolean) => void;
+  /**
+   * Modo silencioso: José no aparece con los mensajes de bienvenida de la pantalla,
+   * solo con avisos (preocupado), celebraciones o `loud`, como aviso que baja y se va.
+   */
+  setQuiet: (q: boolean) => void;
+  /** José está visible en este momento */
+  present: boolean;
+  /** la pantalla actual está en modo silencioso */
+  quiet: boolean;
 }
 
 const Ctx = createContext<JoseApi | null>(null);
@@ -71,6 +82,12 @@ export function JoseProvider({ children }: { children: ReactNode }) {
   const idCounter = useRef(0);
   const typing = useRef(false);
   const pool = useRef<HTMLDivElement[]>([]);
+  const [present, setPresent] = useState(true);
+  const [quiet, setQuietState] = useState(false);
+  const presentRef = useRef(true);
+  const quietRef = useRef(false);
+  const hideTimer = useRef(0);
+  const quietSince = useRef(0);
   const readyResolve = useRef<(c: JoseController) => void>(() => {});
   const readyPromise = useRef<Promise<JoseController>>(null as unknown as Promise<JoseController>);
   if (!readyPromise.current) readyPromise.current = new Promise((res) => (readyResolve.current = res));
@@ -189,7 +206,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
     let zCount = 0;
     const loop = () => {
       const c = ctrlRef.current;
-      if (c && !document.hidden) {
+      if (c && !document.hidden && presentRef.current) {
         const e = c.emberScreen();
         if (c.mood === 'sleeping') {
           if (zCount++ % 3 === 0) emitZ(e.x, e.y);
@@ -230,6 +247,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
       idleTimer = window.setTimeout(() => {
         const c = ctrlRef.current;
         if (!c || typing.current) return armSleep();
+        if (!presentRef.current) return;
         sleeping.current = true;
         c.setMood('sleeping');
         setMsg({ id: ++idCounter.current, text: 'Zzz… puta, me quedé pegao, weón. Toca la pantalla cuando querai seguir.', keepMood: true });
@@ -241,7 +259,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
         sleeping.current = false;
         const prev = msgRef.current;
         ctrlRef.current?.setMood(baseMood.current === 'pointing' ? 'idle' : baseMood.current);
-        if (prev) setMsg({ ...prev, id: ++idCounter.current });
+        if (prev && presentRef.current) setMsg({ ...prev, id: ++idCounter.current });
       }
       armSleep();
     };
@@ -269,8 +287,44 @@ export function JoseProvider({ children }: { children: ReactNode }) {
     const full: Msg = { ...m, id: ++idCounter.current };
     msgRef.current = full;
     if (!m.keepMood) baseMood.current = m.mood ?? (m.point ? 'pointing' : 'idle');
+    if (quietRef.current) {
+      // los mensajes de los primeros segundos son la bienvenida de la pantalla: en silencio se omiten;
+      // lo que venga después responde a algo que hizo la persona y sí se muestra
+      const intro = performance.now() - quietSince.current < 2500;
+      const loud = m.loud || m.mood === 'worried' || m.mood === 'celebrating';
+      if (intro && !loud) return;
+      // aviso: José baja, dice lo suyo y se vuelve a ir
+      window.clearTimeout(hideTimer.current);
+      show(true);
+      hideTimer.current = window.setTimeout(() => quietRef.current && show(false), Math.min(9000, 4500 + m.text.length * 45));
+    }
     setMsg(full);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const show = (v: boolean) => {
+    presentRef.current = v;
+    setPresent(v);
+  };
+
+  const setQuiet = useCallback((q: boolean) => {
+    quietRef.current = q;
+    setQuietState(q);
+    quietSince.current = performance.now();
+    window.clearTimeout(hideTimer.current);
+    show(!q);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // José entra y sale con un salto
+  useEffect(() => {
+    const h = holderRef.current;
+    if (!h) return;
+    gsap.to(h, { autoAlpha: present ? 1 : 0, duration: motion.reduced ? 0 : 0.25, overwrite: 'auto' });
+    // la franja baja con transición: reubicar a José cuando llegue
+    if (present) {
+      const t = window.setTimeout(() => reposition(true), 380);
+      return () => window.clearTimeout(t);
+    }
+  }, [present, reposition]);
 
   const onTap = () => {
     const c = ctrlRef.current;
@@ -301,12 +355,15 @@ export function JoseProvider({ children }: { children: ReactNode }) {
       registerSlot,
       holderEl: () => holderRef.current,
       reposition,
+      setQuiet,
+      present,
+      quiet,
       setTyping: (b) => {
         typing.current = b;
         ctrlRef.current?.talk(b);
       },
     }),
-    [say, msg, smokeBurst, puff, registerSlot, reposition],
+    [say, msg, smokeBurst, puff, registerSlot, reposition, setQuiet, present, quiet],
   );
 
   return (

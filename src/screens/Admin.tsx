@@ -82,7 +82,7 @@ export function Admin({ gid }: { gid: string }) {
 }
 
 function AdminPanel({ gid }: { gid: string }) {
-  useScreenMeta({ back: '/', step: 4, steps: 4, backLabel: 'Volver al inicio' });
+  useScreenMeta({ back: '/', step: 4, steps: 4, backLabel: 'Volver al inicio', joseOnce: `admin:${gid}` });
   const lock = useAdminLock();
   const { navigate } = useRouter();
   const { say } = useJose();
