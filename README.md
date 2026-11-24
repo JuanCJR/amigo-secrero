@@ -23,3 +23,11 @@ npm run dev      # API en :8787 + Vite en :5173
 ## Stack
 
 Vite + React + TypeScript, GSAP 3.13 (Flip, MorphSVG, DrawSVG, MotionPath, Physics2D, SplitText, ScrambleText, CustomEase/Wiggle/Bounce) y una API pequeña con Hono.
+
+## José Miguel 3D (en desarrollo)
+
+Modelo procedural en three.js, en `src/jose3d/` (`model.ts` arma las piezas y `stage.ts` maneja el render y los ánimos). Para verlo con `npm run dev`, abre `http://localhost:5173/jose3d.html`. Acepta estos parámetros:
+
+- `?mood=wave|celebrate|worried|thinking|sleep|idle`
+- `&yaw=0.7` para girarlo
+- `&t=0.5&clear=1` para un cuadro fijo con fondo transparente

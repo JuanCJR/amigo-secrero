@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>José Miguel 3D</title>
+    <style>
+      html, body { margin: 0; height: 100%; } body { background: #0F4A37; color: #F5EFE2; font-family: system-ui, sans-serif; }
+      body.clear { background: transparent; }
+      #stage { position: fixed; inset: 0; }
+      .moods { position: fixed; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; justify-content: center; }
+      .moods button { min-height: 44px; padding: 0 14px; border: 0; background: #F5EFE2; color: #111; font: 700 15px system-ui; text-transform: uppercase; cursor: pointer; }
+      .moods button[aria-pressed='true'] { background: #FFD447; }
+      body.clear .moods { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div class="moods" role="group" aria-label="Ánimo de José"></div>
+    <script type="module" src="/src/jose3d/preview.ts"></script>
+  </body>
+</html>
