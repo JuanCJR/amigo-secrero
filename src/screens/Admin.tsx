@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useJose } from '../jose/JoseProvider';
 import { useRouter } from '../lib/router';
 import { useScreenMeta } from '../components/Shell';
@@ -10,7 +10,7 @@ import { PinInput, type PinHandle } from '../components/PinInput';
 import { NamesEditor, type NameEntry } from '../components/NamesEditor';
 import { api, clp, daysUntil, joseError, prettyDate, type PublicGroup } from '../lib/api';
 import { isAuthError, useAdmin, useGroup, put } from '../lib/data';
-import { rememberGroup, tokens } from '../lib/storage';
+import { drawGuard, rememberGroup, tokens } from '../lib/storage';
 import { gsap, motion } from '../lib/gsap';
 
 export const groupLink = (gid: string) => `${window.location.origin}/g/${gid}`;
@@ -21,13 +21,14 @@ export function shareWhatsApp(g: PublicGroup) {
 }
 
 function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
+  useScreenMeta({ back: '/', backLabel: 'Volver al inicio' });
   const { say } = useJose();
   const [pin, setPin] = useState('');
   const [busy, setBusy] = useState(false);
   const ref = useRef<PinHandle>(null);
   const { data: group } = useGroup(gid);
   useEffect(() => {
-    say({ text: 'Pon tu PIN de organizador para entrar al panel.', point: '.pin' });
+    say({ text: 'El panel del organizador está protegido. Pon tu PIN de organizador para entrar.', point: '.pin' });
   }, [say]);
   const submit = async (v: string) => {
     setBusy(true);
@@ -56,14 +57,32 @@ function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
   );
 }
 
-export function Admin({ gid }: { gid: string }) {
-  const [hasToken, setHasToken] = useState(!!tokens.admin(gid));
-  useScreenMeta({ back: '/', step: 4, steps: 4, backLabel: 'Volver al inicio' });
-  if (!hasToken) return <AdminLogin gid={gid} onDone={() => setHasToken(true)} />;
-  return <AdminPanel gid={gid} onLogout={() => setHasToken(false)} />;
+const LockCtx = createContext<() => void>(() => {});
+/** Cierra el panel (borra la sesión de organizador y vuelve a pedir el PIN). */
+export const useAdminLock = () => useContext(LockCtx);
+
+/** Toda pantalla de administración pasa por aquí: sin sesión válida, se pide el PIN. */
+export function AdminGate({ gid, children }: { gid: string; children: ReactNode }) {
+  const [ok, setOk] = useState(() => !!tokens.admin(gid));
+  const lock = useCallback(() => {
+    tokens.clearAdmin(gid);
+    setOk(false);
+  }, [gid]);
+  if (!ok) return <AdminLogin gid={gid} onDone={() => setOk(true)} />;
+  return <LockCtx.Provider value={lock}>{children}</LockCtx.Provider>;
 }
 
-function AdminPanel({ gid, onLogout }: { gid: string; onLogout: () => void }) {
+export function Admin({ gid }: { gid: string }) {
+  return (
+    <AdminGate gid={gid}>
+      <AdminPanel gid={gid} />
+    </AdminGate>
+  );
+}
+
+function AdminPanel({ gid }: { gid: string }) {
+  useScreenMeta({ back: '/', step: 4, steps: 4, backLabel: 'Volver al inicio' });
+  const lock = useAdminLock();
   const { navigate } = useRouter();
   const { say } = useJose();
   const { data, error, reload, mutate } = useAdmin(gid);
@@ -73,10 +92,8 @@ function AdminPanel({ gid, onLogout }: { gid: string; onLogout: () => void }) {
 
   useEffect(() => {
     if (error) {
-      if (isAuthError(error)) {
-        tokens.clearAdmin(gid);
-        onLogout();
-      } else say({ text: joseError(error), mood: 'worried' });
+      if (isAuthError(error)) lock();
+      else say({ text: joseError(error), mood: 'worried' });
     }
   }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -191,6 +208,16 @@ function AdminPanel({ gid, onLogout }: { gid: string; onLogout: () => void }) {
           ✏️ Editar participantes
         </Btn>
       )}
+      <button
+        className="link-btn small lock-btn"
+        data-anim="pop"
+        onClick={() => {
+          lock();
+          navigate('/');
+        }}
+      >
+        🔒 Cerrar el panel
+      </button>
 
       <Dialog open={confirm} onClose={() => setConfirm(false)}>
         <p className="dialog-text">¿Hacemos el sorteo con estas {g.participants.length} personas?</p>
@@ -199,7 +226,13 @@ function AdminPanel({ gid, onLogout }: { gid: string; onLogout: () => void }) {
             <Avatar key={p.id} seed={p.avatar} size={34} alive={false} />
           ))}
         </div>
-        <Btn anim={false} onClick={() => navigate(`/g/${gid}/admin/sorteo`)}>
+        <Btn
+          anim={false}
+          onClick={() => {
+            drawGuard.arm(gid);
+            navigate(`/g/${gid}/admin/sorteo`);
+          }}
+        >
           Sí, ¡sortear!
         </Btn>
         <Btn
@@ -227,10 +260,22 @@ function AdminPanel({ gid, onLogout }: { gid: string; onLogout: () => void }) {
 }
 
 export function AdminEdit({ gid }: { gid: string }) {
+  return (
+    <AdminGate gid={gid}>
+      <AdminEditInner gid={gid} />
+    </AdminGate>
+  );
+}
+
+function AdminEditInner({ gid }: { gid: string }) {
   useScreenMeta({ back: `/g/${gid}/admin`, step: 4, steps: 4 });
+  const lock = useAdminLock();
   const { navigate } = useRouter();
   const { say } = useJose();
-  const { data } = useAdmin(gid);
+  const { data, error } = useAdmin(gid);
+  useEffect(() => {
+    if (error && isAuthError(error)) lock();
+  }, [error, lock]);
   const [list, setList] = useState<NameEntry[] | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -254,6 +299,7 @@ export function AdminEdit({ gid }: { gid: string }) {
               say({ text: '¡Cambios guardados!', mood: 'celebrating' });
               navigate(`/g/${gid}/admin`);
             } catch (e) {
+              if (isAuthError(e)) lock();
               say({ text: joseError(e), mood: 'worried' });
             } finally {
               setBusy(false);

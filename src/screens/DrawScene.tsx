@@ -9,8 +9,8 @@ import { Avatar } from '../components/Avatar';
 import { confetti } from '../components/confetti';
 import { api, ApiError, joseError, type PublicGroup } from '../lib/api';
 import { useAdmin, put } from '../lib/data';
-import { seen, tokens } from '../lib/storage';
-import { shareWhatsApp } from './Admin';
+import { drawGuard, seen, tokens } from '../lib/storage';
+import { AdminGate, shareWhatsApp, useAdminLock } from './Admin';
 
 function HatBack() {
   return (
@@ -40,8 +40,31 @@ function Envelope() {
   );
 }
 
+/** El sorteo solo corre con sesión de organizador y viniendo de la confirmación. */
 export function DrawScene({ gid }: { gid: string }) {
+  return (
+    <AdminGate gid={gid}>
+      <ArmedDraw gid={gid} />
+    </AdminGate>
+  );
+}
+
+function ArmedDraw({ gid }: { gid: string }) {
+  const [armed] = useState(() => drawGuard.consume(gid));
+  const { navigate } = useRouter();
+  const { say } = useJose();
+  useEffect(() => {
+    if (armed) return;
+    say({ text: 'El sorteo se hace desde el panel, después de confirmar. Toca Hacer el sorteo cuando estén todos.', mood: 'thinking' });
+    navigate(`/g/${gid}/admin`, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!armed) return <Screen>{null}</Screen>;
+  return <DrawSceneInner gid={gid} />;
+}
+
+function DrawSceneInner({ gid }: { gid: string }) {
   useScreenMeta({ back: null, hero: true });
+  const lock = useAdminLock();
   const { navigate } = useRouter();
   const jose = useJose();
   const { data } = useAdmin(gid);
@@ -63,6 +86,10 @@ export function DrawScene({ gid }: { gid: string }) {
         setGroup(g);
       })
       .catch((e) => {
+        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+          lock();
+          return;
+        }
         tlRef.current?.pause();
         setPhase('error');
         const ctrl = jose.ctrl();
