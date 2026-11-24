@@ -4,25 +4,9 @@
 import * as THREE from 'three';
 import { gsap, motion } from '../lib/gsap';
 import { JoseStage, SVG_K, type Rig, type StageOptions } from './stage';
-import type { MouthShape } from './model';
 
-export type Mood = 'idle' | 'talking' | 'pointing' | 'thinking' | 'celebrating' | 'worried' | 'sleeping' | 'covering' | 'peeking';
-export type Reaction = 'tickle' | 'startle' | 'peek' | 'flare' | 'nod';
-export type PoseName = 'rest' | 'wave' | 'hold' | 'raise' | 'overhead' | 'cover' | 'peek' | 'think' | 'shrug' | 'point';
-export type MouthName = MouthShape;
-
-/** Cuánto humo suelta según el ánimo (lo usa JoseProvider). */
-export const SMOKE_RATE: Record<Mood, number> = {
-  idle: 1,
-  talking: 0.8,
-  pointing: 0.8,
-  thinking: 2.2,
-  celebrating: 3,
-  worried: 0.4,
-  sleeping: 0.5,
-  covering: 1.4,
-  peeking: 1.2,
-};
+import { SMOKE_RATE, CANVAS_MARGIN, type Mood, type Reaction, type PoseName, type MouthName } from './constants';
+export { SMOKE_RATE, CANVAS_MARGIN, type Mood, type Reaction, type PoseName, type MouthName };
 
 // brazos: z abre hacia el lado (L negativo, R positivo); x negativo lleva el brazo hacia adelante
 type ArmPose = { Lz: number; Lx: number; Rz: number; Rx: number };
@@ -73,8 +57,11 @@ const POSE_FOR: Record<Mood, PoseName> = {
   peeking: 'peek',
 };
 
-/** Margen del lienzo alrededor de la caja 200×250 del viewBox, para brazos arriba y gorro. */
-export const CANVAS_MARGIN = { left: 90, right: 90, top: 120, bottom: 20 };
+/** Teléfonos con pocos núcleos o poca memoria, o con ahorro de datos: partir en calidad baja. */
+function weakDevice() {
+  const n = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+  return (n.hardwareConcurrency || 8) <= 4 || (n.deviceMemory ?? 8) <= 3 || !!n.connection?.saveData;
+}
 
 export class JoseController {
   readonly stage: JoseStage;
@@ -98,6 +85,7 @@ export class JoseController {
       margin: CANVAS_MARGIN,
       smoke: false,
       reducedMotion: motion.reduced,
+      quality: weakDevice() ? 'low' : 'auto',
       ...opts,
     });
     this.rig = this.stage.rig;

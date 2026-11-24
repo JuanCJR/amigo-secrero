@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { gsap, motion } from '../lib/gsap';
-import { JoseController, SMOKE_RATE, CANVAS_MARGIN, type Mood, type Reaction } from '../jose3d/controller3d';
+import { SMOKE_RATE, CANVAS_MARGIN, type Mood, type Reaction } from '../jose3d/constants';
+import type { JoseController } from '../jose3d/controller3d';
 
 export interface Say {
   text: string;
@@ -19,6 +20,8 @@ interface JoseApi {
   setMood: (m: Mood, target?: { x: number; y: number }) => void;
   react: (r: Reaction) => void;
   ctrl: () => JoseController | null;
+  /** Se resuelve cuando el modelo 3D ya cargó (three.js llega aparte). */
+  ready: () => Promise<JoseController>;
   msg: Msg | null;
   smokeBurst: (to: { x: number; y: number }, n?: number) => void;
   puff: (x: number, y: number, opts?: { size?: number; rise?: number; life?: number }) => void;
@@ -68,6 +71,9 @@ export function JoseProvider({ children }: { children: ReactNode }) {
   const idCounter = useRef(0);
   const typing = useRef(false);
   const pool = useRef<HTMLDivElement[]>([]);
+  const readyResolve = useRef<(c: JoseController) => void>(() => {});
+  const readyPromise = useRef<Promise<JoseController>>(null as unknown as Promise<JoseController>);
+  if (!readyPromise.current) readyPromise.current = new Promise((res) => (readyResolve.current = res));
 
   // ---------- humo ----------
   const getPuff = () => {
@@ -152,11 +158,29 @@ export function JoseProvider({ children }: { children: ReactNode }) {
 
   // ---------- controlador ----------
   useLayoutEffect(() => {
-    const c = new JoseController(stageRef.current!);
-    ctrlRef.current = c;
-    if ((import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV) (window as unknown as { __jose: JoseController }).__jose = c;
     gsap.set(holderRef.current, { transformOrigin: '0 0' });
-    return () => c.destroy();
+    let alive = true;
+    let c: JoseController | null = null;
+    // three.js pesa: se descarga aparte y José aparece apenas está listo
+    import('../jose3d/controller3d')
+      .then(({ JoseController }) => {
+        if (!alive || !stageRef.current) return;
+        c = new JoseController(stageRef.current);
+        ctrlRef.current = c;
+        c.setResolutionScale(scaleRef.current);
+        const m = msgRef.current;
+        if (m && !m.keepMood) c.setMood(baseMood.current === 'pointing' ? 'idle' : baseMood.current);
+        if (!motion.reduced) gsap.from(stageRef.current, { opacity: 0, y: 24, duration: 0.5, ease: 'back.out(2)' });
+        if ((import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV) (window as unknown as { __jose: JoseController }).__jose = c;
+        readyResolve.current(c);
+      })
+      .catch(() => {
+        /* sin WebGL o sin red: la app sigue funcionando sin José animado */
+      });
+    return () => {
+      alive = false;
+      c?.destroy();
+    };
   }, []);
 
   useEffect(() => {
@@ -270,6 +294,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
       setMood: (m, target) => ctrlRef.current?.setMood(m, { target }),
       react: (r) => ctrlRef.current?.react(r),
       ctrl: () => ctrlRef.current,
+      ready: () => readyPromise.current,
       msg,
       smokeBurst,
       puff,

@@ -17,20 +17,20 @@ function GiftSvg() {
   return (
     <>
       <svg viewBox="0 0 200 200" className="gift-box" aria-hidden="true" overflow="visible">
-        <path d="M30,92 L170,92 L162,190 L38,190 Z" fill="#E8443A" stroke="#3B2A2A" strokeWidth="4" strokeLinejoin="round" />
-        <path d="M30,92 L170,92 L168,112 L32,112 Z" fill="#B5302A" opacity="0.5" />
-        <path className="ribbon-v" d="M100,92 L100,190" stroke="#2E9E6E" strokeWidth="20" />
-        <path d="M44,120 L44,180" stroke="#FF7A6E" strokeWidth="4" strokeLinecap="round" opacity="0.6" />
-        <path className="ribbon-end" d="M100,96 C80,120 70,150 62,176" stroke="#2E9E6E" strokeWidth="7" fill="none" strokeLinecap="round" opacity="0" />
-        <path className="ribbon-end" d="M100,96 C120,120 134,150 140,176" stroke="#2E9E6E" strokeWidth="7" fill="none" strokeLinecap="round" opacity="0" />
+        <path d="M30,92 L170,92 L162,190 L38,190 Z" fill="#FF5B3A" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+        <path d="M30,92 L170,92 L168,112 L32,112 Z" fill="#C8401F" opacity="0.5" />
+        <path className="ribbon-v" d="M100,92 L100,190" stroke="#FFD447" strokeWidth="20" />
+        <path d="M44,120 L44,180" stroke="#FF8A6E" strokeWidth="4" strokeLinecap="round" opacity="0.6" />
+        <path className="ribbon-end" d="M100,96 C80,120 70,150 62,176" stroke="#FFD447" strokeWidth="7" fill="none" strokeLinecap="round" opacity="0" />
+        <path className="ribbon-end" d="M100,96 C120,120 134,150 140,176" stroke="#FFD447" strokeWidth="7" fill="none" strokeLinecap="round" opacity="0" />
       </svg>
       <svg viewBox="0 0 200 200" className="gift-lid" aria-hidden="true" overflow="visible">
-        <rect x="20" y="66" width="160" height="32" rx="7" fill="#F05A50" stroke="#3B2A2A" strokeWidth="4" />
-        <path className="ribbon-lid" d="M100,66 L100,98" stroke="#2E9E6E" strokeWidth="20" />
+        <rect x="20" y="66" width="160" height="32" rx="7" fill="#FF6E4F" stroke="#111111" strokeWidth="4" />
+        <path className="ribbon-lid" d="M100,66 L100,98" stroke="#FFD447" strokeWidth="20" />
         <g className="bow">
-          <path d="M100,66 C70,20 40,40 66,62 C76,70 90,68 100,66 Z" fill="#2E9E6E" stroke="#3B2A2A" strokeWidth="4" strokeLinejoin="round" />
-          <path d="M100,66 C130,20 160,40 134,62 C124,70 110,68 100,66 Z" fill="#2E9E6E" stroke="#3B2A2A" strokeWidth="4" strokeLinejoin="round" />
-          <circle cx="100" cy="64" r="10" fill="#3FBF86" stroke="#3B2A2A" strokeWidth="4" />
+          <path d="M100,66 C70,20 40,40 66,62 C76,70 90,68 100,66 Z" fill="#FFD447" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+          <path d="M100,66 C130,20 160,40 134,62 C124,70 110,68 100,66 Z" fill="#FFD447" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+          <circle cx="100" cy="64" r="10" fill="#FFE27A" stroke="#111111" strokeWidth="4" />
         </g>
       </svg>
     </>
@@ -76,7 +76,7 @@ export function Reveal({ gid }: { gid: string }) {
     );
     const layer = sparkRef.current;
     if (!layer) return;
-    const COLORS = ['#FFC15E', '#FFF3DD', '#FF8A3D', '#8FF0C2'];
+    const COLORS = ['#FFD447', '#F5EFE2', '#FF5B3A', '#FFFFFF'];
     const spawn = () => {
       const el = document.createElement('i');
       el.className = Math.random() < 0.55 ? 'sp sp-star' : 'sp';
@@ -151,9 +151,7 @@ export function Reveal({ gid }: { gid: string }) {
         return;
       }
       jose.say({ text: 'Te traje una weá, hermanito. Déjame ponerla aquí…', keepMood: true });
-      gsap.delayedCall(0.8, () => {
-        const ctrl = jose.ctrl();
-        if (!ctrl) return;
+      jose.ready().then((ctrl) => gsap.delayedCall(0.8, () => {
         ctrl.holdPose('hold', 0.3);
         const s = g.getBoundingClientRect();
         const hands = ctrl.svgToScreen(100, 186);
@@ -184,7 +182,7 @@ export function Reveal({ gid }: { gid: string }) {
           .to(g, { scaleY: 0.78, scaleX: 1.18, duration: 0.1, ease: 'power2.in', transformOrigin: '50% 100%' })
           .to(g, { scaleY: 1, scaleX: 1, duration: 0.8, ease: 'elastic.out(1.3,0.35)' })
           .call(() => ctrl.holdPose('rest'), [], 1.1);
-      });
+      }));
     },
     { scope: scene, dependencies: [!!data, !!me] },
   );

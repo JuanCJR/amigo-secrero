@@ -23,19 +23,19 @@ function HatBack() {
 function HatFront() {
   return (
     <svg viewBox="0 0 140 150" className="hat hat-front" aria-hidden="true" overflow="visible">
-      <path d="M14,34 C20,84 48,118 70,136 C92,118 120,84 126,34 C106,50 34,50 14,34 Z" fill="#E8443A" stroke="#3B2A2A" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M34,60 C44,92 58,110 70,122" stroke="#FF7A6E" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.6" />
-      <path d="M8,30 C30,52 110,52 132,30 L132,40 C110,64 30,64 8,40 Z" fill="#FFF8EE" stroke="#3B2A2A" strokeWidth="3" strokeLinejoin="round" />
-      <circle cx="70" cy="140" r="11" fill="#FFF8EE" stroke="#3B2A2A" strokeWidth="3" />
+      <path d="M14,34 C20,84 48,118 70,136 C92,118 120,84 126,34 C106,50 34,50 14,34 Z" fill="#FF5B3A" stroke="#111111" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M34,60 C44,92 58,110 70,122" stroke="#FF8A6E" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.6" />
+      <path d="M8,30 C30,52 110,52 132,30 L132,40 C110,64 30,64 8,40 Z" fill="#F5EFE2" stroke="#111111" strokeWidth="3" strokeLinejoin="round" />
+      <circle cx="70" cy="140" r="11" fill="#F5EFE2" stroke="#111111" strokeWidth="3" />
     </svg>
   );
 }
 function Envelope() {
   return (
     <svg viewBox="0 0 40 28" aria-hidden="true">
-      <rect x="1.5" y="1.5" width="37" height="25" rx="3" fill="#FFF3DD" stroke="#3B2A2A" strokeWidth="2" />
-      <path d="M2,3 L20,16 L38,3" stroke="#3B2A2A" strokeWidth="2" fill="none" strokeLinejoin="round" />
-      <circle className="seal" cx="20" cy="16" r="5" fill="#E8443A" stroke="#3B2A2A" strokeWidth="1.5" />
+      <rect x="1.5" y="1.5" width="37" height="25" rx="3" fill="#F5EFE2" stroke="#111111" strokeWidth="2" />
+      <path d="M2,3 L20,16 L38,3" stroke="#111111" strokeWidth="2" fill="none" strokeLinejoin="round" />
+      <circle className="seal" cx="20" cy="16" r="5" fill="#FF5B3A" stroke="#111111" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -140,10 +140,8 @@ function DrawSceneInner({ gid }: { gid: string }) {
         return;
       }
 
-      // esperar a que José llegue a su lugar en la escena
-      gsap.delayedCall(0.85, () => {
-        const ctrl = jose.ctrl();
-        if (!ctrl) return;
+      // esperar a que José (3D, carga aparte) exista y llegue a su lugar en la escena
+      jose.ready().then((ctrl) => gsap.delayedCall(0.85, () => {
         const s = root.getBoundingClientRect();
         const toLocal = (p: { x: number; y: number }) => ({ x: p.x - s.left, y: p.y - s.top });
         const W = s.width;
@@ -315,7 +313,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
           [],
           closeAt + 0.7,
         );
-      });
+      }));
     },
     { scope: scene, dependencies: [people.length] },
   );

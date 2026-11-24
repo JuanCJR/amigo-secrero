@@ -1,6 +1,6 @@
 import { gsap, motion } from '../lib/gsap';
 
-const COLORS = ['#E8443A', '#2E9E6E', '#FFC15E', '#FF8A3D', '#FFF3DD', '#7FB8FF', '#FF7FB0'];
+const COLORS = ['#F5EFE2', '#FFD447', '#FF5B3A', '#FFFFFF', '#9FD8B8', '#FF8A6E'];
 
 /** Confeti con física (Physics2D): solo transform y opacity. */
 export function confetti(x: number, y: number, opts: { count?: number; spread?: number; power?: number; angle?: number } = {}) {

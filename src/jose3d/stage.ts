@@ -23,6 +23,11 @@ export interface StageOptions {
    * (pies en y=244, brasa en y≈40), para que svgToScreen siga calzando.
    */
   framing?: 'portrait' | 'app';
+  /**
+   * 'high': sombras suaves en tiempo real. 'low': sin sombra dinámica, menos resolución y 30 fps.
+   * 'auto' (por defecto): parte en high y baja sola si los primeros segundos van lentos.
+   */
+  quality?: 'high' | 'low' | 'auto';
   /** Margen del lienzo alrededor de la caja del personaje, en unidades del viewBox. */
   margin?: { left: number; right: number; top: number; bottom: number };
 }
@@ -118,6 +123,13 @@ export class JoseStage {
   private running = false;
   private resScale = 1;
   private shadowBlob?: THREE.Mesh;
+  private floor?: THREE.Mesh;
+  private low = false;
+  private frame = 0;
+  private samples: number[] = [];
+  private lastNow = 0;
+  private t0 = 0;
+  private decided = false;
   private smokeOn: boolean;
 
   constructor(private host: HTMLElement, opts: StageOptions = {}) {
@@ -155,7 +167,8 @@ export class JoseStage {
       // look "de película": colores fieles a la paleta, reflejos de un estudio, sombras suaves
       this.renderer.toneMapping = THREE.NeutralToneMapping;
       this.renderer.toneMappingExposure = 1.0;
-      this.renderer.shadowMap.enabled = true;
+      this.low = opts.quality === 'low';
+      this.renderer.shadowMap.enabled = !this.low;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       const pmrem = new THREE.PMREMGenerator(this.renderer);
       this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -214,6 +227,8 @@ export class JoseStage {
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.ShadowMaterial({ opacity: 0.2 }));
       floor.rotation.x = -Math.PI / 2;
       floor.receiveShadow = true;
+      floor.visible = !this.low;
+      this.floor = floor;
       this.scene.add(floor);
     }
 
@@ -242,7 +257,7 @@ export class JoseStage {
   resize() {
     const w = this.host.clientWidth || 1;
     const h = this.host.clientHeight || 1;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.resScale, 3));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.resScale, this.low ? 1.5 : 3));
     this.renderer.setSize(w, h, false);
     this.renderer.domElement.style.width = '100%';
     this.renderer.domElement.style.height = '100%';
@@ -278,9 +293,46 @@ export class JoseStage {
       if (!this.running) return;
       this.raf = requestAnimationFrame(loop);
       if (document.hidden) return;
+      this.frame++;
+      this.measure();
+      if (this.low && this.frame % 2) return; // modo liviano: 30 fps
       this.tick();
     };
     loop();
+  }
+
+  /** Mide los cuadros entre el segundo 1 y el 3; si el teléfono no da abasto, baja la calidad una vez. */
+  private measure() {
+    const now = performance.now();
+    const dt = now - this.lastNow;
+    this.lastNow = now;
+    if (this.decided || this.low || this.opts.quality === 'high') return;
+    if (!this.t0) this.t0 = now;
+    const since = now - this.t0;
+    if (since < 1000) return;
+    this.samples.push(dt);
+    if (since > 3000 || this.samples.length >= 120) {
+      this.decided = true;
+      const sorted = [...this.samples].sort((a, b) => a - b);
+      if (sorted[Math.floor(sorted.length / 2)] > 26) this.degrade(); // menos de ~38 fps
+    }
+  }
+
+  /** Pasa a calidad baja: sin sombra en tiempo real, menos píxeles y 30 fps. */
+  degrade() {
+    if (this.low) return;
+    this.low = true;
+    this.renderer.shadowMap.enabled = false;
+    if (this.floor) this.floor.visible = false;
+    this.scene.traverse((o) => {
+      const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+      if (m) m.needsUpdate = true;
+    });
+    this.resize();
+  }
+
+  get isLowQuality() {
+    return this.low;
   }
 
   stop() {

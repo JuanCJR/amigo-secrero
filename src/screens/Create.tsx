@@ -117,7 +117,9 @@ export function CreateDetails() {
         {QUICK.map((b) => (
           <Btn
             key={b}
-            variant={d.budget === b && !custom ? 'primary' : 'soft'}
+            variant="soft"
+            className={d.budget === b && !custom ? 'is-selected' : undefined}
+            aria-pressed={d.budget === b && !custom}
             anim="pop"
             onClick={() => {
               setCustom('');
