@@ -47,9 +47,9 @@ const CANVAS_STYLE = {
 };
 
 const QUIPS = [
-  '¡Jaja, cosquillas no! Sigue con el botón grande de abajo.',
-  'Oye, cuidado que me apagas. Tú dale nomás, yo te guío.',
-  'Tranqui, aquí estoy. Cuando quieras, toca el botón de abajo.',
+  '¡Jajaja, cosquillas no, weón culiao! Dale con el botón grande de abajo.',
+  'Oe, deja de wear, que me apagai, conchetumare. Tú dale nomás, yo te llevo, cachai.',
+  '¿Qué weá, hermano? Aquí ando po. Cuando querai, toca el botón de abajo.',
 ];
 
 export function JoseProvider({ children }: { children: ReactNode }) {
@@ -208,7 +208,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
         if (!c || typing.current) return armSleep();
         sleeping.current = true;
         c.setMood('sleeping');
-        setMsg({ id: ++idCounter.current, text: 'Zzz… me quedé pegado. Toca la pantalla cuando quieras seguir.', keepMood: true });
+        setMsg({ id: ++idCounter.current, text: 'Zzz… puta, me quedé pegao, weón. Toca la pantalla cuando querai seguir.', keepMood: true });
       }, SLEEP_MS);
     };
     const onActivity = (e: Event) => {

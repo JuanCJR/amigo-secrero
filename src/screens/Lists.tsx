@@ -57,8 +57,8 @@ export function MyList({ gid }: { gid: string }) {
     if (!data) return;
     say(
       wishes.length
-        ? { text: 'Pega aquí otro link de algo que te guste y toca Agregar. Quien te sacó verá tu lista.', point: '#wish-url' }
-        : { text: 'Copia el link de un regalo en la app de la tienda y pégalo aquí. Si no sabes cómo, toca "¿Cómo copio un link?".', point: '#wish-url' },
+        ? { text: 'Pega aquí otro link de algo que te tinque y toca Agregar. El que te sacó va a ver tu lista.', point: '#wish-url' }
+        : { text: 'Copia el link de un regalo en la app de la tienda y pégalo aquí. Si no cachai cómo, toca "¿Cómo copio un link?".', point: '#wish-url' },
     );
   }, [!!data]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -74,7 +74,7 @@ export function MyList({ gid }: { gid: string }) {
         const p = await api<Preview>('/preview', { body: { url } });
         if (alive) {
           setPreview(p);
-          say({ text: '¡Lo encontré! Si quieres, agrega una nota, y toca Agregar a mi lista.', point: '.screen-cta .btn' });
+          say({ text: '¡Lo pillé! Si querí, ponle una nota, y toca Agregar a mi lista.', point: '.screen-cta .btn' });
         }
       } catch {
         if (alive) setPreview({ site: new URL(url).hostname.replace(/^www\./, '') });
@@ -122,9 +122,9 @@ export function MyList({ gid }: { gid: string }) {
       const t = await navigator.clipboard.readText();
       if (!t) throw new Error();
       setRaw(t);
-      if (!extractUrl(t)) say({ text: 'Lo que copiaste no parece un link. En la tienda toca Compartir y después Copiar link.', mood: 'worried' });
+      if (!extractUrl(t)) say({ text: '¿Qué weá copiaste? Eso no es un link. En la tienda toca Compartir y después Copiar link.', mood: 'worried' });
     } catch {
-      say({ text: 'No pude leer lo copiado. Mantén apretado el cuadro de texto y elige Pegar.', mood: 'worried', point: '#wish-url' });
+      say({ text: 'No pude leer lo que copiaste. Mantén apretao el cuadro de texto y elige Pegar.', mood: 'worried', point: '#wish-url' });
     }
   };
 
@@ -148,7 +148,7 @@ export function MyList({ gid }: { gid: string }) {
       mutate({ ...data!, wishlist: r.wishlist });
       const n = r.wishlist.length;
       say({
-        text: n === 1 ? '¡Anotado, tu primer deseo! Agrega otra opción si quieres; mientras más ideas, mejor.' : `¡Anotado! Ya tienes ${n} ideas. Agrega otra o toca Volver cuando termines.`,
+        text: n === 1 ? '¡Anotao tu primer deseo, conchetumare! Mete otra weá si querí; mientras más ideas, mejor.' : `¡Anotao! Ya teníai ${n} ideas. Mete otra o toca Volver cuando estí listo.`,
         mood: 'celebrating',
       });
     } catch (e) {
@@ -167,7 +167,7 @@ export function MyList({ gid }: { gid: string }) {
       const st = listRef.current ? Flip.getState(listRef.current.querySelectorAll('.wish')) : null;
       mutate({ ...data!, wishlist: r.wishlist });
       requestAnimationFrame(() => st && Flip.from(st, { duration: 0.5, ease: 'back.out(1.6)' }));
-      say({ text: 'Listo, lo saqué de tu lista. Puedes pegar otro link cuando quieras.', point: '#wish-url' });
+      say({ text: 'Listo, lo saqué de tu lista. Pega otro link cuando querai.', point: '#wish-url' });
     } catch (e) {
       gsap.set(el, { clearProps: 'all' });
       say({ text: joseError(e), mood: 'worried' });
@@ -182,7 +182,7 @@ export function MyList({ gid }: { gid: string }) {
           blocked={!url}
           onBlocked={() =>
             say({
-              text: raw ? 'Eso no parece un link. En la tienda toca Compartir, luego Copiar link, y pégalo en el cuadro.' : 'Primero pega un link en el cuadro de arriba. Toca Pegar o mantén apretado el cuadro.',
+              text: raw ? 'Esa weá no es un link. En la tienda toca Compartir, después Copiar link, y lo pegai en el cuadro.' : 'Primero pega un link en el cuadro de arriba po. Toca Pegar o mantén apretao el cuadro.',
               mood: 'worried',
               point: '#wish-url',
             })
@@ -303,8 +303,8 @@ export function TheirList({ gid }: { gid: string }) {
     const n = data.wishlist.length;
     say(
       n
-        ? { text: `Esto es lo que le gustaría a ${data.receiver.name}. Toca una opción para abrirla en la tienda.`, point: '.wishes' }
-        : { text: `${data.receiver.name} todavía no agrega nada. Vuelve en unos días, o sorpréndele con algo de hasta ${clp(me.group.budget)}.`, mood: 'thinking' },
+        ? { text: `Esto es lo que le tinca al ${data.receiver.name}. Toca una opción pa abrirla en la tienda.`, point: '.wishes' }
+        : { text: `El flojo culiao del ${data.receiver.name} no ha puesto ni una weá todavía. Vuelve en unos días, o sorpréndelo con algo de hasta ${clp(me.group.budget)}.`, mood: 'thinking' },
     );
   }, [!!data, !!me]); // eslint-disable-line react-hooks/exhaustive-deps
 

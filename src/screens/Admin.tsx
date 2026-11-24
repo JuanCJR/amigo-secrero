@@ -29,7 +29,7 @@ function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
   const ref = useRef<PinHandle>(null);
   const { data: group } = useGroup(gid);
   useEffect(() => {
-    say({ text: 'El panel del organizador está protegido. Pon tu PIN de organizador para entrar.', point: '.pin' });
+    say({ text: 'Este panel es del organizador, weón, no cualquier sapo entra. Pon tu PIN de organizador.', point: '.pin' });
   }, [say]);
   const submit = async (v: string) => {
     setBusy(true);
@@ -47,7 +47,7 @@ function AdminLogin({ gid, onDone }: { gid: string; onDone: () => void }) {
     }
   };
   return (
-    <Screen cta={<Btn busy={busy} blocked={pin.length < 4} onBlocked={() => say({ text: 'Escribe los 4 números de tu PIN.', mood: 'worried', point: '.pin' })} onClick={() => submit(pin)}>Entrar</Btn>}>
+    <Screen cta={<Btn busy={busy} blocked={pin.length < 4} onBlocked={() => say({ text: 'Ya po, weón, escribe los 4 números de tu PIN.', mood: 'worried', point: '.pin' })} onClick={() => submit(pin)}>Entrar</Btn>}>
       <h1 className="title" data-anim="drop">
         {group?.title || 'Panel del organizador'}
       </h1>
@@ -102,8 +102,8 @@ function AdminPanel({ gid }: { gid: string }) {
     if (!g) return;
     rememberGroup({ gid, role: 'admin', title: g.title });
     put(`group:${gid}`, g);
-    if (g.drawn) say({ text: 'El sorteo ya está hecho. Manda el link al grupo para que cada uno descubra a quién le tocó.', point: '.screen-cta .btn' });
-    else say({ text: 'Manda este link al grupo para que armen su lista. Cuando quieras, toca Hacer el sorteo.', point: '#share-copy' });
+    if (g.drawn) say({ text: 'El sorteo ya está hecho, weón. Manda el link al grupo pa que cada uno cache a quién le tocó.', point: '.screen-cta .btn' });
+    else say({ text: 'Tírale este link al grupo pa que armen su lista. Cuando querai, toca Hacer el sorteo.', point: '#share-copy' });
   }, [g?.drawn, !!g]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // refrescar estados cada tanto
@@ -115,11 +115,11 @@ function AdminPanel({ gid }: { gid: string }) {
   const copy = async (e: React.MouseEvent) => {
     try {
       await navigator.clipboard.writeText(groupLink(gid));
-      say({ text: '¡Link copiado! Pégalo en el grupo de WhatsApp de tus amigos.', mood: 'celebrating' });
+      say({ text: '¡Listo el link, conchetumare! Pégalo en el grupo de WhatsApp de los weones.', mood: 'celebrating' });
       const t = e.currentTarget as HTMLElement;
       if (!motion.reduced) gsap.fromTo(t, { rotation: -6 }, { rotation: 0, duration: 0.6, ease: 'elastic.out(1,0.3)' });
     } catch {
-      say({ text: 'No pude copiarlo solo. Mantén apretado el link de arriba y elige Copiar.', mood: 'worried', point: '.share-url' });
+      say({ text: 'Puta, no pude copiarlo solo. Mantén apretao el link de arriba y elige Copiar.', mood: 'worried', point: '.share-url' });
     }
   };
 
@@ -128,7 +128,7 @@ function AdminPanel({ gid }: { gid: string }) {
       const r = await api<{ group: PublicGroup }>(`/admin/reset/${pid}`, { method: 'POST', token: tokens.admin(gid) });
       mutate({ ...data!, group: r.group });
       const p = r.group.participants.find((x) => x.id === pid);
-      say({ text: `Listo, reinicié el PIN de ${p?.name}. Dile que entre al link y cree uno nuevo.`, mood: 'celebrating' });
+      say({ text: `Listo, le reinicié el PIN al weón del ${p?.name}. Dile que entre al link y se haga uno nuevo.`, mood: 'celebrating' });
     } catch (e) {
       say({ text: joseError(e), mood: 'worried' });
     }
@@ -148,7 +148,7 @@ function AdminPanel({ gid }: { gid: string }) {
           <Btn
             onClick={() => {
               setConfirm(true);
-              say({ text: 'Ojo, que después de sortear no hay vuelta atrás. ¿Están todos? Si es así, toca Sí, sortear.', mood: 'worried' });
+              say({ text: 'Ojo al charqui, weón, que después de sortear no hay vuelta atrás. ¿Están toos los culiaos? Si es así, toca Sí, sortear.', mood: 'worried' });
             }}
           >
             Hacer el sorteo
@@ -195,7 +195,7 @@ function AdminPanel({ gid }: { gid: string }) {
                 className="link-btn"
                 onClick={() => {
                   setResetting(p.id);
-                  say({ text: `¿${p.name} olvidó su PIN? Si lo reinicio, tendrá que crear uno nuevo. Su sorteo no cambia.`, mood: 'thinking' });
+                  say({ text: `¿El weón del ${p.name} se olvidó el PIN? Si se lo reinicio, tiene que hacerse uno nuevo. Su sorteo no cambia, tranqui.`, mood: 'thinking' });
                 }}
               >
                 Reiniciar PIN
@@ -241,7 +241,7 @@ function AdminPanel({ gid }: { gid: string }) {
           anim={false}
           onClick={() => {
             setConfirm(false);
-            say({ text: 'Dale, sin apuro. Cuando estén todos, toca Hacer el sorteo.', point: '.screen-cta .btn' });
+            say({ text: 'Dale, sin apuro, weón. Cuando estén toos, toca Hacer el sorteo.', point: '.screen-cta .btn' });
           }}
         >
           Todavía no
@@ -283,7 +283,7 @@ function AdminEditInner({ gid }: { gid: string }) {
     if (data && !list) setList(data.group.participants.map((p) => ({ id: p.id, name: p.name, avatar: p.avatar })));
   }, [data, list]);
   useEffect(() => {
-    say({ text: 'Agrega o quita personas, y toca Guardar cambios cuando termines.', point: '#add-name' });
+    say({ text: 'Mete o saca gente, y toca Guardar cambios cuando estí listo.', point: '#add-name' });
   }, [say]);
   if (!list) return <Screen><div className="loading">Cargando…</div></Screen>;
   return (
@@ -292,12 +292,12 @@ function AdminEditInner({ gid }: { gid: string }) {
         <Btn
           busy={busy}
           blocked={list.length < 3}
-          onBlocked={() => say({ text: 'Necesito al menos 3 personas. Agrega a alguien más arriba.', mood: 'worried' })}
+          onBlocked={() => say({ text: 'Necesito mínimo 3 weones po. Mete a alguien más arriba.', mood: 'worried' })}
           onClick={async () => {
             setBusy(true);
             try {
               await api(`/admin/participants`, { method: 'PUT', token: tokens.admin(gid), body: { participants: list } });
-              say({ text: '¡Cambios guardados!', mood: 'celebrating' });
+              say({ text: '¡Guardao, la raja, weón!', mood: 'celebrating' });
               navigate(`/g/${gid}/admin`);
             } catch (e) {
               if (isAuthError(e)) lock();
