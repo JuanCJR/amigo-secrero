@@ -2,32 +2,7 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import { gsap, motion } from '../lib/gsap';
 import { useRouter } from '../lib/router';
 import { Bubble } from '../jose/Bubble';
-import { JoseSlot, useJose } from '../jose/JoseProvider';
-import { isVoiceOn, onVoiceChange, setVoiceOn, speak, voiceSupported } from '../jose/voice';
-
-function VoiceToggle() {
-  const [on, setOn] = useState(isVoiceOn);
-  const { msg } = useJose();
-  useEffect(() => onVoiceChange(() => setOn(isVoiceOn())), []);
-  if (!voiceSupported) return null;
-  const toggle = () => {
-    const next = !on;
-    setVoiceOn(next);
-    if (next && msg) speak(msg.text);
-  };
-  return (
-    <button className="voice-btn" onClick={toggle} aria-pressed={on} aria-label={on ? 'Silenciar a José Miguel' : 'Activar la voz de José Miguel'}>
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-        <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        {on ? (
-          <path d="M16.5 8.5 Q19 12 16.5 15.5 M19 6 Q23 12 19 18" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-        ) : (
-          <path d="M16.5 9.5 L21.5 14.5 M21.5 9.5 L16.5 14.5" stroke="currentColor" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        )}
-      </svg>
-    </button>
-  );
-}
+import { JoseSlot } from '../jose/JoseProvider';
 
 interface Meta {
   back?: string | null;
@@ -94,8 +69,7 @@ export function Shell({ children }: { children: ReactNode }) {
           ) : (
             <span className="back-spacer" />
           )}
-          {meta.steps ? <Stepper step={meta.step || 1} steps={meta.steps} /> : <span className="topbar-fill" />}
-          <VoiceToggle />
+          {meta.steps ? <Stepper step={meta.step || 1} steps={meta.steps} /> : null}
         </header>
         <section className="band">
           {!meta.hero && <JoseSlot className="band-slot" />}
