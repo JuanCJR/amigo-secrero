@@ -53,11 +53,11 @@ export class JoseStage {
     this.camera.lookAt(0, 1.3, 0);
 
     // luz: una principal dura (define el corte toon) + relleno suave + contraluz cálido
-    this.scene.add(new THREE.HemisphereLight('#FFF6E0', '#0F4A37', 1.4));
+    this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 1.5));
     const key = new THREE.DirectionalLight('#FFFFFF', 2.6);
     key.position.set(2.5, 4, 4);
     this.scene.add(key);
-    const rim = new THREE.DirectionalLight('#FFD447', 1.2);
+    const rim = new THREE.DirectionalLight('#FFF1C2', 0.8);
     rim.position.set(-3, 2, -3);
     this.scene.add(rim);
 

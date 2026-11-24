@@ -5,10 +5,10 @@ import * as THREE from 'three';
 
 export const PALETTE = {
   ink: '#111111',
-  paper: '#FBF7EE',
-  paperShade: '#E9E1CF',
-  cork: '#E49A43',
-  corkDot: '#B9702A',
+  paper: '#FFFFFF',
+  paperShade: '#E6E6E4',
+  cork: '#B9B7B3',
+  corkDot: '#8F8C88',
   ash: '#6E6866',
   ember: '#FF5B3A',
   emberHot: '#FFD447',
@@ -111,13 +111,13 @@ function buildBody(parts: Partial<JoseParts>) {
   const paperTex = canvasTexture(512, 256, (c) => {
     c.fillStyle = PALETTE.paper;
     c.fillRect(0, 0, 512, 256);
-    c.strokeStyle = 'rgba(140,120,90,0.25)';
+    c.strokeStyle = 'rgba(120,120,120,0.22)';
     c.lineWidth = 3;
     c.beginPath();
     c.moveTo(372, 0);
     c.lineTo(366, 256);
     c.stroke();
-    c.strokeStyle = 'rgba(140,120,90,0.05)';
+    c.strokeStyle = 'rgba(120,120,120,0.04)';
     c.lineWidth = 2;
     for (let i = 0; i < 6; i++) {
       const y = 30 + i * 40;
