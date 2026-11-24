@@ -166,6 +166,8 @@ function knit() {
 }
 
 // ---------- piezas ----------
+export type MouthShape = 'smile' | 'smirk' | 'open' | 'grin' | 'oh' | 'frown' | 'sleep';
+
 export interface JoseParts {
   root: THREE.Group;
   body: THREE.Group;
@@ -174,7 +176,7 @@ export interface JoseParts {
   pupils: THREE.Object3D[];
   lids: THREE.Object3D[];
   brows: THREE.Object3D[];
-  mouths: Record<'smile' | 'open' | 'oh', THREE.Object3D>;
+  mouths: Record<MouthShape, THREE.Object3D>;
   armL: THREE.Group;
   armR: THREE.Group;
   legL: THREE.Group;
@@ -395,14 +397,23 @@ function buildFace(parts: Partial<JoseParts>) {
   open.position.set(0, mouthY + 0.03, R - 0.005);
   const oh = mesh(new THREE.TorusGeometry(0.035, 0.016, 10, 24), mouthMat, 'mouthOh', false);
   oh.position.set(0, mouthY, R + 0.004);
-  open.visible = false;
-  oh.visible = false;
-  head.add(smile, open, oh);
+  const smirk = mesh(new THREE.TorusGeometry(0.06, 0.016, 10, 24, Math.PI * 0.8), mouthMat, 'mouthSmirk', false);
+  smirk.rotation.z = Math.PI + 0.35;
+  smirk.position.set(0.02, mouthY + 0.035, R + 0.005);
+  const grin = mesh(new THREE.SphereGeometry(0.1, 24, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mouthMat, 'mouthGrin');
+  grin.scale.set(1, 1.15, 0.35);
+  grin.position.set(0, mouthY + 0.045, R - 0.008);
+  const frown = mesh(new THREE.TorusGeometry(0.06, 0.016, 10, 24, Math.PI), mouthMat, 'mouthFrown', false);
+  frown.position.set(0, mouthY - 0.02, R + 0.005);
+  const sleep = mesh(new THREE.TorusGeometry(0.022, 0.013, 10, 20), mouthMat, 'mouthSleep', false);
+  sleep.position.set(0, mouthY, R + 0.004);
+  for (const m of [open, oh, smirk, grin, frown, sleep]) m.visible = false;
+  head.add(smile, open, oh, smirk, grin, frown, sleep);
 
   parts.eyes = eyes;
   parts.pupils = pupils;
   parts.lids = lids;
-  parts.mouths = { smile, open, oh };
+  parts.mouths = { smile, open, oh, smirk, grin, frown, sleep };
   return head;
 }
 

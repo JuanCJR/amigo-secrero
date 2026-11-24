@@ -13,6 +13,7 @@ import { isAuthError, useMatch, useMe } from '../lib/data';
 import { seen, tokens } from '../lib/storage';
 import { gsap, Flip, motion } from '../lib/gsap';
 import { confetti } from '../components/confetti';
+import { Icon } from '../components/Icon';
 
 /** Saca el link de un texto pegado (las apps suelen compartir "Mira esto https://...") */
 export function extractUrl(raw: string): string | null {
@@ -194,7 +195,7 @@ export function MyList({ gid }: { gid: string }) {
     >
       <div className="screen-head" data-flip-id="card-list">
         <span className="step-icon" aria-hidden="true">
-          📝
+          <Icon name="list" size={28} />
         </span>
         <h1 className="title">Mi lista de deseos</h1>
       </div>
@@ -212,7 +213,7 @@ export function MyList({ gid }: { gid: string }) {
         />
         {typeof navigator !== 'undefined' && 'clipboard' in navigator && 'readText' in navigator.clipboard && (
           <Btn variant="soft" className="add-btn" anim={false} onClick={paste}>
-            📋 Pegar
+            <Icon name="paste" /> Pegar
           </Btn>
         )}
       </div>
@@ -310,7 +311,7 @@ export function TheirList({ gid }: { gid: string }) {
   return (
     <Screen cta={<Btn variant="soft" onClick={() => navigate(`/g/${gid}/inicio`)}>Volver al inicio</Btn>}>
       <div className="screen-head receiver-head" data-flip-id="card-their">
-        {data ? <Avatar seed={data.receiver.avatar} size={64} /> : <span className="step-icon">🎯</span>}
+        {data ? <Avatar seed={data.receiver.avatar} size={64} /> : <span className="step-icon"><Icon name="target" size={28} /></span>}
         <div>
           <small>Le regalas a</small>
           <h1 className="title">{data?.receiver.name ?? '…'}</h1>
@@ -318,7 +319,7 @@ export function TheirList({ gid }: { gid: string }) {
       </div>
       {me && (
         <div className="chips" data-anim="pop">
-          <Chip tone="gold">💰 Hasta {clp(me.group.budget)}</Chip>
+          <Chip tone="gold"><Icon name="gift" size={16} /> Hasta {clp(me.group.budget)}</Chip>
         </div>
       )}
       {data && data.wishlist.length === 0 && (

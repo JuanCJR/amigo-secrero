@@ -1,20 +1,21 @@
 :root {
-  --ink: #151a2e;
-  --ink-2: #0f1324;
-  --surface: #22294a;
-  --surface-2: #2c3560;
-  --line: rgba(255, 255, 255, 0.1);
-  --red: #e8443a;
-  --red-d: #b5302a;
-  --ember: #ff8a3d;
-  --gold: #ffc15e;
-  --green: #2e9e6e;
-  --cream: #fff3dd;
-  --smoke: #c9c2dc;
-  --outline: #3b2a2a;
-  --dark-text: #2a1e1e;
-  --display: 'Bagel Fat One', 'Figtree Variable', system-ui, sans-serif;
-  --body: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Tema "Rifa": verde pino, papelitos crema y amarillos, botón tomate */
+  --ink: #0f4a37;
+  --ink-2: #0b3a2b;
+  --surface: #155a44;
+  --surface-2: #1c6a51;
+  --line: rgba(245, 239, 226, 0.18);
+  --red: #ff5b3a;
+  --red-d: #c8401f;
+  --ember: #ff5b3a;
+  --gold: #ffd447;
+  --green: #0f4a37;
+  --cream: #f5efe2;
+  --smoke: #cfe0d6;
+  --outline: #111111;
+  --dark-text: #111111;
+  --display: 'Big Shoulders Display', 'Inter Variable', system-ui, sans-serif;
+  --body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
 
@@ -29,13 +30,13 @@ body,
   margin: 0;
 }
 body {
-  background: var(--ink);
-  color: var(--cream);
-  font-family: var(--body);
-  font-size: 18px;
-  line-height: 1.4;
-  overflow: hidden;
-  overscroll-behavior: none;
+background: var(--ink);
+color: var(--cream);
+font-family: var(--body);
+font-size: 17px;
+line-height: 1.4;
+overflow: hidden;
+overscroll-behavior: none;
 }
 button {
   font: inherit;
@@ -59,44 +60,6 @@ button {
 }
 
 /* ---------- fondo ---------- */
-.bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  background: radial-gradient(120% 70% at 50% 0%, #26305a 0%, var(--ink) 55%, var(--ink-2) 100%);
-}
-.bg-stars {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 55%;
-}
-.bg-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.bg-layer {
-  position: absolute;
-  left: -6%;
-  width: 112%;
-  bottom: 0;
-  will-change: transform;
-}
-.bg-layer svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.bg-far {
-  height: 26%;
-}
-.bg-near {
-  height: 15%;
-}
 
 /* ---------- shell ---------- */
 .app {
@@ -117,16 +80,15 @@ button {
   padding: 6px 12px;
 }
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  min-height: 48px;
-  padding: 0 14px 0 6px;
-  border-radius: 14px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  font-size: 16px;
-  font-weight: 700;
+display: inline-flex;
+align-items: center;
+gap: 2px;
+min-height: 48px;
+padding: 0 12px 0 2px;
+background: transparent;
+border: 0;
+font-size: 16px;
+font-weight: 700;
 }
 .back-spacer {
   width: 0;
@@ -138,25 +100,25 @@ button {
   gap: 6px;
 }
 .step {
-  flex: 1;
-  height: 9px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.14);
-  overflow: hidden;
+flex: 1;
+height: 6px;
+background: rgba(245, 239, 226, 0.25);
+overflow: hidden;
 }
 .step-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--ember), var(--gold));
-  transform: scaleX(0);
-  transform-origin: left center;
-  border-radius: 99px;
+height: 100%;
+background: var(--gold);
+transform: scaleX(0);
+transform-origin: left center;
 }
 .step-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--smoke);
-  white-space: nowrap;
-  margin-left: 4px;
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(--cream);
+white-space: nowrap;
+margin-left: 4px;
 }
 
 .band {
@@ -188,28 +150,28 @@ button {
   display: none;
 }
 .bubble {
-  position: relative;
-  display: grid;
-  padding: 12px 16px 13px;
-  color: var(--dark-text);
-  font-size: 17px;
-  line-height: 1.35;
-  font-weight: 650;
-  transform-origin: 0% 70%;
-  min-height: 54px;
-  align-items: center;
+position: relative;
+display: grid;
+padding: 12px 16px 13px;
+color: var(--dark-text);
+font-size: 16px;
+line-height: 1.38;
+font-weight: 600;
+transform-origin: 0% 70%;
+min-height: 54px;
+align-items: center;
 }
 .bubble-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+overflow: visible;
+transform: rotate(-1.2deg);
 }
 .bubble-bg path {
-  fill: var(--cream);
-  stroke: var(--outline);
-  stroke-width: 3;
+fill: var(--gold);
+stroke: none;
 }
 .bubble-text,
 .bubble-measure {
@@ -230,17 +192,13 @@ button {
   will-change: transform, opacity;
 }
 .bubble-tail {
-  position: absolute;
-  left: 0;
-  bottom: 14px;
-  width: 20px;
-  height: 30px;
+display: none;
 }
 .bubble-tail i {
   position: absolute;
   border-radius: 50%;
   background: var(--cream);
-  border: 2.5px solid var(--outline);
+  border: 0;
 }
 .bubble-tail i:nth-child(1) {
   width: 14px;
@@ -277,12 +235,12 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 .screen-cta {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
-  background: linear-gradient(to bottom, rgba(21, 26, 46, 0), rgba(21, 26, 46, 0.92) 30%);
+display: flex;
+flex-direction: column;
+align-items: stretch;
+gap: 6px;
+padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+background: var(--ink);
 }
 
 /* ---------- José ---------- */
@@ -356,41 +314,34 @@ button {
 
 /* ---------- tipografía ---------- */
 .title {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: 0.3px;
-  margin: 6px 0 12px;
-  color: var(--cream);
+font-family: var(--display);
+font-weight: 900;
+font-size: 48px;
+line-height: 0.9;
+text-transform: uppercase;
+margin: 6px 0 14px;
+color: var(--cream);
 }
 .hero-title {
-  margin: 4px 0 18px;
-  text-align: center;
+margin: 0 0 18px;
 }
 .hero-word {
-  display: block;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(42px, 13vw, 58px);
-  line-height: 1;
-  color: var(--cream);
-  text-shadow: 0 4px 0 var(--red-d);
-}
-.hero-sub {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 19px;
-  font-weight: 800;
-  color: var(--gold);
+display: block;
+font-family: var(--display);
+font-weight: 900;
+font-size: clamp(72px, 26vw, 112px);
+white-space: nowrap;
+line-height: 0.82;
+text-transform: uppercase;
+color: var(--cream);
 }
 .group-label {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--smoke);
-  margin: 18px 0 8px;
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(--cream);
+margin: 20px 0 8px;
 }
 .count,
 .fine,
@@ -400,54 +351,50 @@ button {
   text-align: center;
 }
 .inline-hint {
-  color: var(--gold);
-  font-size: 15px;
-  margin: -4px 0 8px;
+color: var(--gold);
+font-size: 15px;
+margin: -4px 0 8px;
 }
 
 /* ---------- botones ---------- */
 .btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 58px;
-  padding: 0 22px;
-  border-radius: 18px;
-  border: 3px solid var(--outline);
-  font-size: 19px;
-  font-weight: 800;
-  box-shadow: 0 5px 0 var(--outline);
-  will-change: transform;
-  user-select: none;
-  touch-action: manipulation;
+position: relative;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+min-height: 60px;
+padding: 0 22px;
+border: 0;
+font-family: var(--display);
+font-size: 26px;
+font-weight: 800;
+text-transform: uppercase;
+letter-spacing: 0.02em;
+will-change: transform;
+user-select: none;
+touch-action: manipulation;
 }
 .btn-primary {
-  background: var(--red);
-  color: #fff;
-}
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  inset: 5px 14px auto;
-  height: 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.35);
+background: var(--red);
+color: var(--dark-text);
 }
 .btn-soft {
-  background: var(--cream);
-  color: var(--dark-text);
+background: var(--cream);
+color: var(--dark-text);
 }
 .btn-ghost {
-  background: transparent;
-  color: var(--cream);
-  border: 2px dashed var(--smoke);
-  box-shadow: none;
-  min-height: 52px;
+background: transparent;
+color: var(--cream);
+border: 2px dashed rgba(245, 239, 226, 0.55);
+min-height: 54px;
+font-size: 22px;
 }
 .btn.is-blocked {
-  filter: saturate(0.4) brightness(0.8);
+background: transparent;
+color: var(--cream);
+outline: 2px dashed var(--red);
+outline-offset: -2px;
 }
 .btn.is-busy .btn-label {
   opacity: 0.7;
@@ -482,20 +429,20 @@ button {
   width: 100%;
 }
 .link-btn {
-  background: none;
-  border: none;
-  color: var(--gold);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-size: 16px;
-  font-weight: 700;
-  min-height: 48px;
-  padding: 0 8px;
+background: none;
+border: none;
+color: var(--cream);
+text-decoration: underline;
+text-underline-offset: 4px;
+font-size: 15px;
+font-weight: 600;
+min-height: 48px;
+padding: 0 8px;
 }
 .link-btn.small {
-  font-size: 15px;
-  color: var(--smoke);
-  min-height: 44px;
+font-size: 14px;
+color: var(--smoke);
+min-height: 44px;
 }
 
 /* ---------- campos ---------- */
@@ -507,26 +454,25 @@ button {
   will-change: transform;
 }
 .field-label {
-  display: block;
-  font-size: 16px;
-  font-weight: 750;
-  color: var(--cream);
+display: block;
+font-size: 14px;
+font-weight: 600;
+color: var(--cream);
 }
 .field-input {
-  width: 100%;
-  min-height: 58px;
-  font-size: 18px;
-  font-family: inherit;
-  padding: 0 16px;
-  border-radius: 16px;
-  border: 3px solid var(--outline);
-  background: var(--cream);
-  color: var(--dark-text);
-  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.08);
+width: 100%;
+min-height: 56px;
+font-size: 18px;
+font-family: inherit;
+padding: 0 14px;
+border: 0;
+border-radius: 0;
+background: var(--cream);
+color: var(--dark-text);
 }
 .field-input:focus {
-  outline: 3px solid var(--gold);
-  outline-offset: 2px;
+outline: 3px solid var(--gold);
+outline-offset: 2px;
 }
 .field-input[type='date'] {
   -webkit-appearance: none;
@@ -550,9 +496,10 @@ button {
   min-width: 0;
 }
 .add-btn {
-  flex: none;
-  padding: 0 14px;
-  font-size: 17px;
+flex: none;
+padding: 0 16px;
+font-size: 22px;
+min-height: 56px;
 }
 
 /* ---------- listas de nombres / chips ---------- */
@@ -564,14 +511,13 @@ button {
   gap: 10px;
 }
 .name-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 18px;
-  padding: 6px 6px 6px 8px;
-  will-change: transform;
+display: flex;
+align-items: center;
+gap: 10px;
+background: var(--cream);
+color: var(--dark-text);
+padding: 4px 4px 4px 8px;
+will-change: transform;
 }
 .avatar-btn {
   display: grid;
@@ -584,22 +530,23 @@ button {
   perspective: 300px;
 }
 .name-text {
-  flex: 1;
-  font-size: 18px;
-  font-weight: 750;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+flex: 1;
+font-family: var(--display);
+font-size: 26px;
+font-weight: 800;
+text-transform: uppercase;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
 }
 .remove-btn {
-  width: 48px;
-  height: 48px;
-  border: none;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--smoke);
-  display: grid;
-  place-items: center;
+width: 48px;
+height: 48px;
+border: none;
+background: transparent;
+color: var(--dark-text);
+display: grid;
+place-items: center;
 }
 .chips {
   display: flex;
@@ -607,22 +554,21 @@ button {
   gap: 8px;
 }
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  font-size: 15px;
-  font-weight: 750;
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 6px 10px;
+background: rgba(245, 239, 226, 0.12);
+font-size: 14px;
+font-weight: 700;
 }
 .chip-gold {
-  background: rgba(255, 193, 94, 0.16);
-  color: var(--gold);
+background: var(--gold);
+color: var(--dark-text);
 }
 .chip-green {
-  background: rgba(46, 158, 110, 0.22);
-  color: #8ff0c2;
+background: var(--cream);
+color: var(--dark-text);
 }
 .budget-grid {
   display: grid;
@@ -632,25 +578,22 @@ button {
 
 /* ---------- tarjetas ---------- */
 .card {
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 20px;
-  padding: 16px;
-  margin: 12px 0;
+background: rgba(245, 239, 226, 0.08);
+padding: 16px;
+margin: 12px 0;
 }
 .card-title {
   font-weight: 800;
   font-size: 17px;
 }
 .share-url {
-  font-size: 15px;
-  background: var(--ink-2);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin: 8px 0 12px;
-  word-break: break-all;
-  user-select: all;
-  color: var(--gold);
+font-size: 15px;
+background: var(--ink-2);
+padding: 10px 12px;
+margin: 8px 0 12px;
+word-break: break-all;
+user-select: all;
+color: var(--gold);
 }
 .row {
   display: flex;
@@ -672,13 +615,12 @@ button {
   gap: 8px;
 }
 .person {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--surface);
-  border-radius: 16px;
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+gap: 8px;
+padding: 8px 10px;
+background: rgba(245, 239, 226, 0.08);
 }
 .person-name {
   flex: 1;
@@ -687,60 +629,41 @@ button {
   min-width: 80px;
 }
 .badge {
-  font-size: 13px;
-  font-weight: 750;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--smoke);
+display: inline-flex;
+align-items: center;
+gap: 4px;
+font-size: 13px;
+font-weight: 700;
+padding: 4px 8px;
+background: rgba(245, 239, 226, 0.15);
+color: var(--cream);
 }
 .badge-ok {
-  background: rgba(46, 158, 110, 0.25);
-  color: #8ff0c2;
+background: var(--gold);
+color: var(--dark-text);
 }
 .person .link-btn {
   font-size: 14px;
   min-height: 44px;
 }
-.how {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 10px;
-}
-.how-item {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 18px;
-  padding: 12px 14px;
-}
-.how-icon {
-  font-size: 30px;
-}
-.how-item strong,
 .known-group strong {
   display: block;
   font-size: 18px;
 }
-.how-item small,
 .known-group small {
-  display: block;
-  font-size: 15px;
-  color: var(--smoke);
+display: block;
+font-size: 15px;
+color: #3a3a3a;
 }
 .known-group {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: var(--surface-2);
-  border: 2px solid var(--line);
-  border-radius: 18px;
-  padding: 14px 16px;
-  margin-bottom: 8px;
+display: block;
+width: 100%;
+text-align: left;
+background: var(--cream);
+color: var(--dark-text);
+border: 0;
+padding: 14px 16px;
+margin-bottom: 8px;
 }
 
 /* ---------- diálogo ---------- */
@@ -754,9 +677,9 @@ button {
   padding: 16px;
 }
 .dialog-scrim {
-  position: absolute;
-  inset: 0;
-  background: rgba(10, 12, 25, 0.72);
+position: absolute;
+inset: 0;
+background: rgba(6, 30, 22, 0.82);
 }
 .dialog-card {
   position: relative;
@@ -766,10 +689,10 @@ button {
   gap: 12px;
   background: var(--cream);
   color: var(--dark-text);
-  border: 3px solid var(--outline);
-  border-radius: 24px;
+  border: 0;
+  border-radius: 0;
   padding: 20px;
-  box-shadow: 0 8px 0 var(--outline);
+  box-shadow: none;
 }
 .dialog-text {
   margin: 0;
@@ -784,8 +707,8 @@ button {
   gap: 4px;
 }
 .dialog-card .btn-ghost {
-  color: var(--dark-text);
-  border-color: var(--outline);
+color: var(--dark-text);
+border-color: rgba(17, 17, 17, 0.5);
 }
 
 /* ---------- PIN ---------- */
@@ -811,21 +734,18 @@ button {
   gap: 12px;
 }
 .pin-box {
-  height: 76px;
-  border-radius: 18px;
-  background: var(--cream);
-  border: 3px solid var(--outline);
-  box-shadow: 0 5px 0 var(--outline);
-  display: grid;
-  place-items: center;
-  will-change: transform;
+height: 76px;
+background: var(--cream);
+display: grid;
+place-items: center;
+will-change: transform;
 }
 .pin-box.is-filled {
-  background: #ffe3b0;
+background: var(--cream);
 }
 .pin-box.is-current {
-  outline: 3px solid var(--gold);
-  outline-offset: 2px;
+background: var(--gold);
+box-shadow: inset 0 -5px 0 var(--dark-text);
 }
 .pin-dot {
   width: 18px;
@@ -848,39 +768,41 @@ button {
 
 /* ---------- caras ---------- */
 .face-grid {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+list-style: none;
+padding: 0;
+margin: 0;
+display: grid;
+grid-template-columns: minmax(0, 1fr);
+gap: 10px;
 }
 .face {
-  position: relative;
-  width: 100%;
-  min-height: 124px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 4px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 20px;
+position: relative;
+width: 100%;
+min-height: 72px;
+display: flex;
+align-items: center;
+gap: 14px;
+padding: 6px 14px 6px 8px;
+background: var(--cream);
+color: var(--dark-text);
+border: 0;
+text-align: left;
 }
 .face-name {
-  font-size: 16px;
-  font-weight: 750;
-  text-align: center;
-  line-height: 1.15;
-  word-break: break-word;
+flex: 1;
+font-family: var(--display);
+font-size: 32px;
+font-weight: 800;
+text-transform: uppercase;
+line-height: 1;
 }
 .face-lock {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 13px;
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+background: var(--gold);
+padding: 4px 8px;
 }
 
 /* ---------- inicio ---------- */
@@ -901,38 +823,39 @@ button {
   gap: 12px;
 }
 .step-card {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 86px;
-  padding: 14px;
-  text-align: left;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 22px;
+width: 100%;
+display: flex;
+align-items: center;
+gap: 14px;
+min-height: 86px;
+padding: 14px;
+text-align: left;
+background: var(--cream);
+color: var(--dark-text);
+border: 0;
 }
 .step-num {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--red);
-  border: 2.5px solid var(--outline);
-  font-weight: 800;
-  font-size: 17px;
+flex: none;
+width: 40px;
+display: grid;
+place-items: center;
+font-family: var(--display);
+font-weight: 800;
+font-size: 28px;
+border-right: 2px dashed var(--dark-text);
+padding-right: 10px;
 }
 .step-card.is-done .step-num {
-  background: var(--green);
+color: var(--dark-text);
 }
 .step-card.is-locked {
-  opacity: 0.62;
+opacity: 1;
+background: rgba(245, 239, 226, 0.12);
+color: var(--cream);
 }
 .step-icon {
-  font-size: 30px;
-  line-height: 1;
+line-height: 0;
+display: inline-flex;
 }
 .step-text strong {
   display: block;
@@ -941,17 +864,14 @@ button {
 .step-text small {
   display: block;
   font-size: 15px;
-  color: var(--smoke);
+  color: #3a3a3a;
 }
 .screen-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 22px;
-  padding: 12px 16px;
-  margin-bottom: 8px;
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 4px 0;
+margin-bottom: 8px;
 }
 .screen-head .title {
   margin: 0;
@@ -972,18 +892,15 @@ button {
   gap: 12px;
 }
 .wish {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--cream);
-  color: var(--dark-text);
-  border: 3px solid var(--outline);
-  border-radius: 18px;
-  padding: 10px;
-  box-shadow: 0 4px 0 var(--outline);
-  text-decoration: none;
-  will-change: transform;
-  margin: 8px 0;
+display: flex;
+align-items: center;
+gap: 12px;
+background: var(--cream);
+color: var(--dark-text);
+padding: 10px;
+text-decoration: none;
+will-change: transform;
+margin: 8px 0;
 }
 .wishes .wish {
   margin: 0;
@@ -992,11 +909,11 @@ button {
   flex: none;
   width: 64px;
   height: 64px;
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
   display: grid;
   place-items: center;
-  border: 2px solid var(--outline);
+  border: 0;
 }
 .wish-thumb img {
   width: 100%;
@@ -1034,13 +951,15 @@ button {
   color: #4a3a38;
 }
 .wish-del {
-  flex: none;
-  min-width: 48px;
-  height: 48px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  font-size: 20px;
+flex: none;
+min-width: 48px;
+height: 48px;
+border: none;
+background: transparent;
+color: var(--dark-text);
+display: grid;
+place-items: center;
+font-weight: 700;
 }
 .wish-del.is-confirm {
   background: var(--red);
@@ -1061,7 +980,7 @@ button {
 .sk-line {
   display: block;
   height: 12px;
-  border-radius: 6px;
+  border-radius: 0;
   background: #e6d9c0;
   margin: 4px 0;
   width: 90%;
@@ -1179,7 +1098,7 @@ button {
   width: 22px;
   height: 16px;
   background: var(--cream);
-  border: 2px solid var(--outline);
+  border: 0;
   border-radius: 3px;
   opacity: 0;
   z-index: 3;
@@ -1316,15 +1235,15 @@ button {
 .card-face {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  border: 3px solid var(--outline);
+  border-radius: 0;
+  border: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 0 var(--outline);
+  box-shadow: none;
 }
 .card-front {
   background: repeating-linear-gradient(45deg, var(--red) 0 10px, var(--red-d) 10px 20px);
@@ -1351,9 +1270,10 @@ button {
 }
 .card-name {
   font-family: var(--display);
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 1.05;
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 0.95;
+  text-transform: uppercase;
   text-align: center;
   word-break: break-word;
   min-height: 1em;
@@ -1423,4 +1343,72 @@ button {
 .lock-btn {
   display: block;
   margin: 14px auto 0;
+}
+.jm-stage {
+  position: absolute;
+  pointer-events: none;
+}
+
+.hero-accent {
+color: var(--gold);
+}
+
+.face-av svg {
+width: 52px;
+height: 52px;
+}
+
+.step-card.is-done {
+background: var(--gold);
+}
+
+.step-card.is-locked .step-num {
+border-color: var(--cream);
+}
+
+.step-card.is-locked .step-text small {
+color: var(--smoke);
+}
+
+.ticket {
+display: flex;
+background: var(--cream);
+color: var(--dark-text);
+}
+
+.ticket-body {
+flex: 1;
+padding: 12px 14px;
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+
+.ticket-body p {
+margin: 0;
+font-size: 15px;
+font-weight: 500;
+line-height: 1.38;
+}
+
+.ticket-kicker {
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+}
+
+.ticket-stub {
+width: 64px;
+display: grid;
+place-items: center;
+border-left: 2px dashed var(--dark-text);
+margin: 6px 0;
+font-family: var(--display);
+font-weight: 900;
+font-size: 30px;
+}
+
+.icon {
+flex: none;
 }

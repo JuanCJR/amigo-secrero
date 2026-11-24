@@ -28,25 +28,16 @@ export function Welcome() {
   useGSAP(
     () => {
       if (motion.reduced) return;
-      const split = SplitText.create(title.current!.querySelector('.hero-word'), { type: 'chars' });
+      const split = SplitText.create(title.current!.querySelectorAll('.hero-word'), { type: 'chars' });
+      // las letras caen como papelitos y quedan quietas: nada de rebote infinito
       gsap.from(split.chars, {
-        y: -80,
-        rotation: () => gsap.utils.random(-40, 40),
-        scaleY: 1.4,
+        y: -60,
+        rotation: () => gsap.utils.random(-25, 25),
         opacity: 0,
-        duration: 1,
+        duration: 0.8,
         ease: 'landing',
-        stagger: 0.05,
+        stagger: 0.04,
         delay: 0.2,
-      });
-      gsap.to(split.chars, {
-        y: -6,
-        duration: 0.9,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-        stagger: { each: 0.08, repeat: -1, yoyo: true },
-        delay: 1.4,
       });
     },
     { scope: title },
@@ -54,29 +45,23 @@ export function Welcome() {
 
   return (
     <Screen cta={<Btn onClick={() => navigate('/crear/1')}>Armar un amigo secreto</Btn>}>
-      <h1 className="hero-title" ref={title}>
-        <span className="hero-word">Amigo Secreto</span>
-        <span className="hero-sub" data-anim="pop">
-          con José Miguel
+      <h1 className="hero-title" ref={title} aria-label="Amigo secreto">
+        <span className="hero-word" aria-hidden="true">
+          Amigo
+        </span>
+        <span className="hero-word" aria-hidden="true">
+          Secre<span className="hero-accent">to</span>
         </span>
       </h1>
-      <ul className="how" aria-label="Cómo funciona">
-        {[
-          ['🎩', 'Sorteo mágico', 'Nadie se saca a sí mismo y nadie ve el de otro.'],
-          ['🎁', 'Revelación', 'Cada uno abre su regalo y descubre a quién le toca.'],
-          ['📝', 'Lista de deseos', 'Pegas links de regalos y tu amigo secreto los ve.'],
-        ].map(([icon, t, s]) => (
-          <li key={t} data-anim="pop" className="how-item">
-            <span className="how-icon" aria-hidden="true">
-              {icon}
-            </span>
-            <span>
-              <strong>{t}</strong>
-              <small>{s}</small>
-            </span>
-          </li>
-        ))}
-      </ul>
+      <div className="ticket how-ticket" data-anim="pop">
+        <div className="ticket-body">
+          <span className="ticket-kicker">Cómo funciona</span>
+          <p>Anotas los nombres, mandas un link al grupo y cada uno abre su papelito. Nadie ve el de nadie, ni siquiera tú.</p>
+        </div>
+        <div className="ticket-stub" aria-hidden="true">
+          Nº1
+        </div>
+      </div>
       {groups.length > 0 && (
         <div className="known">
           <div className="group-label" data-anim="pop">

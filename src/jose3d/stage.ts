@@ -1,10 +1,9 @@
-// Escenario 3D de José Miguel: render, luces, cámara y animación por "ánimo".
-// No depende de React; JoseCanvas.tsx lo envuelve.
+// Escenario 3D de José Miguel: render, luces y cámara.
+// La pose la decide quien maneja `rig` (ver controller3d.ts); aquí solo se aplica
+// cada cuadro junto con el movimiento ambiental (respirar, parpadear, brasa, humo).
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { buildJose, type JoseParts, type Look } from './model';
-
-export type Mood3D = 'idle' | 'wave' | 'celebrate' | 'worried' | 'thinking' | 'sleep';
+import { buildJose, type JoseParts, type Look, type MouthShape } from './model';
 
 export interface StageOptions {
   /** 'pixar' (por defecto): luz de estudio y sombras suaves. 'toon': plano con contorno. */
@@ -12,15 +11,74 @@ export interface StageOptions {
   /** Fondo transparente (para ponerlo sobre la UI). */
   transparent?: boolean;
   background?: string;
-  /** Respeta prefers-reduced-motion: sin rebotes ni saltos, solo parpadeo. */
+  /** Respeta prefers-reduced-motion: sin balanceo ambiental. */
   reducedMotion?: boolean;
-  /** Rotación fija en Y (radianes) para renders de vuelta completa. */
-  yaw?: number;
   /** Conserva el último cuadro para poder capturarlo (renders fijos). */
   capture?: boolean;
-  /** Sigue el puntero con la mirada. */
-  followPointer?: boolean;
+  /** Humo 3D propio (la app usa humo en el DOM y lo apaga). */
+  smoke?: boolean;
+  /**
+   * Encuadre. 'portrait': cámara en perspectiva para vistas previas.
+   * 'app': cámara ortográfica alineada con el viewBox 200×250 del rig SVG original
+   * (pies en y=244, brasa en y≈40), para que svgToScreen siga calzando.
+   */
+  framing?: 'portrait' | 'app';
+  /** Margen del lienzo alrededor de la caja del personaje, en unidades del viewBox. */
+  margin?: { left: number; right: number; top: number; bottom: number };
 }
+
+/** Estado de pose que anima el controlador (con GSAP u otro). */
+export interface Rig {
+  armLz: number;
+  armLx: number;
+  armRz: number;
+  armRx: number;
+  /** salto (unidades de mundo) */
+  hop: number;
+  /** estirar/aplastar: 1 = normal */
+  stretch: number;
+  /** inclinación del cuerpo (radianes, eje z) */
+  lean: number;
+  /** giro del cuerpo hacia un lado (radianes, eje y) */
+  turn: number;
+  /** temblor (amplitud en unidades de mundo) */
+  jitter: number;
+  /** amplitud del balanceo ambiental (0 = quieto) */
+  sway: number;
+  mouth: MouthShape;
+  /** párpado base 0 abierto, 1 cerrado */
+  lid: number;
+  browLift: number;
+  browTilt: number;
+  /** gorro: 1 puesto, 0 no está */
+  hat: number;
+  /** brillo extra de la brasa */
+  flare: number;
+  /** mirada -1..1 */
+  lookX: number;
+  lookY: number;
+}
+
+export const defaultRig = (): Rig => ({
+  armLz: -0.12,
+  armLx: 0,
+  armRz: 0.12,
+  armRx: 0,
+  hop: 0,
+  stretch: 1,
+  lean: 0,
+  turn: 0,
+  jitter: 0,
+  sway: 1,
+  mouth: 'smile',
+  lid: 0,
+  browLift: 0,
+  browTilt: 0,
+  hat: 1,
+  flare: 0,
+  lookX: 0,
+  lookY: 0,
+});
 
 function softShadow() {
   const cv = document.createElement('canvas');
@@ -38,25 +96,33 @@ function softShadow() {
 const HAT_TILT = 0.42;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
+/** Escala del viewBox del rig SVG: unidades SVG por unidad de mundo (pies 244 ↔ brasa 40 = 2.2 u). */
+export const SVG_K = (244 - 40) / 2.2;
+
 export class JoseStage {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera: THREE.PerspectiveCamera;
+  readonly camera: THREE.Camera;
   readonly jose: JoseParts;
-  mood: Mood3D = 'idle';
+  readonly rig: Rig = defaultRig();
+  /** callback opcional antes de cada cuadro (t en segundos) */
+  onFrame?: (t: number) => void;
 
   private clock = new THREE.Timer();
   private raf = 0;
-  private moodStart = 0;
   private nextBlink = 1.5;
   private blinkT = -1;
   private look = new THREE.Vector2();
-  private lookTarget = new THREE.Vector2();
   private opts: StageOptions;
   private ro?: ResizeObserver;
+  private running = false;
+  private resScale = 1;
+  private shadowBlob?: THREE.Mesh;
+  private smokeOn: boolean;
 
   constructor(private host: HTMLElement, opts: StageOptions = {}) {
     this.opts = opts;
+    this.smokeOn = opts.smoke ?? true;
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!opts.transparent, preserveDrawingBuffer: !!opts.capture });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -65,13 +131,29 @@ export class JoseStage {
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = 'block';
 
-    this.camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
-    this.camera.position.set(0, 2.6, 8.2);
-    this.camera.lookAt(0, 1.3, 0);
+    if (opts.framing === 'app') {
+      const m = opts.margin ?? { left: 0, right: 0, top: 0, bottom: 0 };
+      // viewBox (0..200, 0..250) + márgenes → mundo; x=100 ↔ 0, y=244 ↔ 0 (pies)
+      const cam = new THREE.OrthographicCamera(
+        (-m.left - 100) / SVG_K,
+        (200 + m.right - 100) / SVG_K,
+        (244 + m.top) / SVG_K,
+        (244 - 250 - m.bottom) / SVG_K,
+        0.1,
+        30,
+      );
+      cam.position.set(0, 0, 10);
+      this.camera = cam;
+    } else {
+      const cam = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
+      cam.position.set(0, 2.6, 8.2);
+      cam.lookAt(0, 1.3, 0);
+      this.camera = cam;
+    }
 
     if (look === 'pixar') {
-      // look "de película": tone mapping filmico, reflejos de un estudio, sombras suaves
-      this.renderer.toneMapping = THREE.NeutralToneMapping; // conserva los colores de la paleta
+      // look "de película": colores fieles a la paleta, reflejos de un estudio, sombras suaves
+      this.renderer.toneMapping = THREE.NeutralToneMapping;
       this.renderer.toneMappingExposure = 1.0;
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -89,7 +171,12 @@ export class JoseStage {
       key.shadow.bias = -0.0004;
       key.shadow.normalBias = 0.02;
       const sc = key.shadow.camera as THREE.OrthographicCamera;
-      sc.left = -2; sc.right = 2; sc.top = 3.5; sc.bottom = -0.5; sc.near = 0.5; sc.far = 12;
+      sc.left = -2;
+      sc.right = 2;
+      sc.top = 3.5;
+      sc.bottom = -0.5;
+      sc.near = 0.5;
+      sc.far = 12;
       this.scene.add(key);
       const fill = new THREE.DirectionalLight('#CFE2FF', 0.7); // relleno frío
       fill.position.set(-3.5, 2, 3);
@@ -99,7 +186,6 @@ export class JoseStage {
       this.scene.add(rim);
       this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 0.35));
     } else {
-      // luz: una principal dura (define el corte toon) + relleno suave + contraluz cálido
       this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 1.5));
       const key = new THREE.DirectionalLight('#FFFFFF', 2.6);
       key.position.set(2.5, 4, 4);
@@ -110,7 +196,12 @@ export class JoseStage {
     }
 
     this.jose = buildJose(look);
+    if (opts.framing === 'app') this.jose.root.rotation.x = 0.16; // se inclina hacia la cámara: se ve la brasa
     this.scene.add(this.jose.root);
+    if (!this.smokeOn) {
+      const s = this.jose.body.getObjectByName('smoke');
+      if (s) s.visible = false;
+    }
     if (look === 'pixar') {
       this.jose.root.traverse((o) => {
         const m = o as THREE.Mesh;
@@ -129,65 +220,81 @@ export class JoseStage {
     // sombra de contacto
     const shadow = new THREE.Mesh(
       new THREE.CircleGeometry(0.55, 40),
-      new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: look === 'pixar' ? 0.35 : 0.22, depthWrite: false, alphaMap: look === 'pixar' ? softShadow() : null }),
+      new THREE.MeshBasicMaterial({
+        color: '#000000',
+        transparent: true,
+        opacity: look === 'pixar' ? 0.35 : 0.22,
+        depthWrite: false,
+        alphaMap: look === 'pixar' ? softShadow() : null,
+      }),
     );
     shadow.rotation.x = -Math.PI / 2;
     shadow.scale.y = 0.6;
     shadow.position.y = 0.001;
-    shadow.name = 'shadow';
+    this.shadowBlob = shadow;
     this.scene.add(shadow);
 
     this.resize();
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(host);
-    if (opts.followPointer) window.addEventListener('pointermove', this.onPointer);
   }
-
-  private onPointer = (e: PointerEvent) => {
-    const r = this.host.getBoundingClientRect();
-    const x = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
-    const y = (e.clientY - (r.top + r.height * 0.4)) / window.innerHeight;
-    this.lookTarget.set(THREE.MathUtils.clamp(x * 2, -1, 1), THREE.MathUtils.clamp(y * 2, -1, 1));
-  };
 
   resize() {
     const w = this.host.clientWidth || 1;
     const h = this.host.clientHeight || 1;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio * this.resScale, 3));
     this.renderer.setSize(w, h, false);
     this.renderer.domElement.style.width = '100%';
     this.renderer.domElement.style.height = '100%';
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
+    if (this.camera instanceof THREE.PerspectiveCamera) {
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+    }
   }
 
-  setMood(m: Mood3D) {
-    if (m === this.mood) return;
-    this.mood = m;
-    this.moodStart = this.clock.getElapsed();
-  }
-
-  /** Mirada manual (-1..1); útil para apuntar a un botón. */
-  lookAt(x: number, y: number) {
-    this.lookTarget.set(x, y);
+  /** Cuando el contenedor se agranda con transform: scale, sube la resolución para no verse borroso. */
+  setResolutionScale(s: number) {
+    const next = Math.max(1, Math.min(s, 3));
+    if (Math.abs(next - this.resScale) < 0.05) return;
+    this.resScale = next;
+    this.resize();
   }
 
   blink() {
     this.blinkT = 0;
   }
 
+  /** Proyecta un punto del mundo a coordenadas de pantalla (px del viewport). */
+  worldToScreen(v: THREE.Vector3) {
+    const r = this.renderer.domElement.getBoundingClientRect();
+    const p = v.clone().project(this.camera);
+    return { x: r.left + ((p.x + 1) / 2) * r.width, y: r.top + ((1 - p.y) / 2) * r.height };
+  }
+
   start() {
+    if (this.running) return;
+    this.running = true;
     const loop = () => {
+      if (!this.running) return;
       this.raf = requestAnimationFrame(loop);
+      if (document.hidden) return;
       this.tick();
     };
     loop();
   }
 
+  stop() {
+    this.running = false;
+    cancelAnimationFrame(this.raf);
+  }
+
   /** Avanza la animación hasta t segundos y dibuja un cuadro (para renders fijos). */
   renderAt(t: number) {
-    // simula desde 0 para que las transiciones suavizadas lleguen a su pose
-    this.moodStart = 0;
-    for (let x = 0; x < t; x += 1 / 60) this.tick(x, false);
+    for (let x = 0; x < t; x += 1 / 60) {
+      this.onFrame?.(x);
+      this.tick(x, false);
+    }
+    this.onFrame?.(t);
     this.tick(t);
   }
 
@@ -195,122 +302,72 @@ export class JoseStage {
     if (fixedT === undefined) this.clock.update();
     const t = fixedT ?? this.clock.getElapsed();
     const dt = fixedT === undefined ? Math.min(this.clock.getDelta() || 1 / 60, 0.05) : 1 / 60;
+    if (fixedT === undefined) this.onFrame?.(t);
     const j = this.jose;
-    const reduced = !!this.opts.reducedMotion;
-    const mt = t - this.moodStart;
-
-    // reposo
-    let bob = reduced ? 0 : Math.sin(t * 2.2) * 0.025;
-    let sway = reduced ? 0 : Math.sin(t * 1.1) * 0.035;
-    let armL = -0.12, armR = 0.12, armLx = 0, armRx = 0;
-    let jump = 0;
-    let browLift = 0, browTilt = 0;
-    let mouth: 'smile' | 'open' | 'oh' = 'smile';
-    let lidBase = 0;
-    let headTurn = 0;
-
-    switch (this.mood) {
-      case 'wave': {
-        armR = 2.0 + Math.sin(t * 12) * 0.3;
-        mouth = 'open';
-        browLift = 0.02;
-        break;
-      }
-      case 'celebrate': {
-        const p = (mt * 1.6) % 1;
-        jump = reduced ? 0 : Math.sin(p * Math.PI) * 0.35;
-        armL = -2.05;
-        armR = 2.05;
-        mouth = 'open';
-        browLift = 0.035;
-        break;
-      }
-      case 'worried': {
-        armL = -0.9;
-        armR = 0.9;
-        armLx = -0.7;
-        armRx = -0.7;
-        browTilt = -0.35;
-        mouth = 'oh';
-        sway *= 0.4;
-        break;
-      }
-      case 'thinking': {
-        armR = 1.2;
-        armRx = -1.4;
-        headTurn = 0.25;
-        this.lookTarget.set(0.6, -0.7);
-        browTilt = -0.2;
-        break;
-      }
-      case 'sleep': {
-        lidBase = 1;
-        bob = Math.sin(t * 1.2) * 0.015;
-        sway = 0;
-        mouth = 'oh';
-        break;
-      }
-    }
+    const r = this.rig;
+    const amb = this.opts.reducedMotion ? 0 : r.sway;
 
     // cuerpo
-    j.root.position.y = bob + jump;
-    j.root.rotation.y = (this.opts.yaw ?? 0) + headTurn * 0.4;
-    j.body.rotation.z = sway;
-    const squash = jump > 0.01 ? 1 + jump * 0.12 : 1 - Math.abs(Math.sin(t * 2.2)) * (reduced ? 0 : 0.012);
-    j.body.scale.set(1 / Math.sqrt(squash), squash, 1 / Math.sqrt(squash));
-    const sh = this.scene.getObjectByName('shadow');
-    if (sh) sh.scale.set(1 - jump * 0.6, 0.6 * (1 - jump * 0.6), 1);
+    const breathe = Math.sin(t * 2.2);
+    const jit = r.jitter ? (Math.random() - 0.5) * r.jitter : 0;
+    j.root.position.set(jit, breathe * 0.02 * amb + r.hop, 0);
+    j.root.rotation.y = r.turn;
+    j.body.rotation.z = Math.sin(t * 1.1) * 0.035 * amb + r.lean;
+    const sq = r.stretch * (1 - Math.abs(breathe) * 0.01 * amb);
+    j.body.scale.set(1 / Math.sqrt(sq), sq, 1 / Math.sqrt(sq));
+    if (this.shadowBlob) {
+      const k = 1 - Math.min(r.hop, 0.6) * 0.7;
+      this.shadowBlob.scale.set(k, 0.6 * k, 1);
+    }
 
-    // brazos (z = abrir hacia el lado, x = adelante)
-    const k = 1 - Math.exp(-dt * 12);
-    j.armL.rotation.z += (armL - j.armL.rotation.z) * k;
-    j.armR.rotation.z += (armR - j.armR.rotation.z) * k;
-    j.armL.rotation.x += (armLx - j.armL.rotation.x) * k;
-    j.armR.rotation.x += (armRx - j.armR.rotation.x) * k;
-
-    // piernas: pequeño paso al saltar
-    j.legL.rotation.x = jump * 0.8;
-    j.legR.rotation.x = -jump * 0.8;
+    // brazos (z = abrir hacia el lado, x negativo = hacia adelante)
+    j.armL.rotation.set(r.armLx, 0, r.armLz);
+    j.armR.rotation.set(r.armRx, 0, r.armRz);
+    j.legL.rotation.x = r.hop * 0.8;
+    j.legR.rotation.x = -r.hop * 0.8;
 
     // gorro y pompón con retraso
-    j.hat.rotation.z = HAT_TILT + Math.sin(t * 2.2 - 0.6) * (reduced ? 0 : 0.05) - jump * 0.2;
-    j.pompom.position.y = 0.63 + Math.sin(t * 2.2 - 1.2) * (reduced ? 0 : 0.02);
-    j.scarfTail.rotation.z = 0.15 + Math.sin(t * 1.7) * (reduced ? 0 : 0.08);
+    j.hat.visible = r.hat > 0.01;
+    j.hat.scale.setScalar(Math.max(0.001, r.hat));
+    j.hat.rotation.z = HAT_TILT + Math.sin(t * 2.2 - 0.6) * 0.05 * amb - r.hop * 0.2;
+    j.pompom.position.y = 0.63 + Math.sin(t * 2.2 - 1.2) * 0.02 * amb;
+    j.scarfTail.rotation.z = 0.15 + Math.sin(t * 1.7) * 0.08 * amb;
 
-    // humo: cada bolita sube, crece y se desvanece en ciclo
-    const smoke = j.body.getObjectByName('smoke');
-    smoke?.children.forEach((puff, i) => {
-      const c = (t * 0.45 + i / 3) % 1;
-      puff.position.set(0.12 + Math.sin(c * 5 + i) * 0.08, 2.1 + c * 0.75, 0);
-      puff.scale.setScalar(0.4 + c * 0.9);
-      ((puff as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = (this.mood === 'sleep' ? 0.2 : 0.38) * Math.sin(c * Math.PI);
-    });
+    // humo 3D (solo vistas previas)
+    if (this.smokeOn) {
+      const smoke = j.body.getObjectByName('smoke');
+      smoke?.children.forEach((puff, i) => {
+        const c = (t * 0.45 + i / 3) % 1;
+        puff.position.set(0.12 + Math.sin(c * 5 + i) * 0.08, 2.1 + c * 0.75, 0);
+        puff.scale.setScalar(0.4 + c * 0.9);
+        ((puff as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = (r.lid > 0.9 ? 0.2 : 0.38) * Math.sin(c * Math.PI);
+      });
+    }
 
     // mirada
-    if (this.mood !== 'thinking' && !this.opts.followPointer) this.lookTarget.lerp(new THREE.Vector2(0, 0), 0.02);
-    this.look.lerp(this.lookTarget, 1 - Math.exp(-dt * 8));
+    this.look.lerp(new THREE.Vector2(r.lookX, r.lookY), 1 - Math.exp(-dt * 10));
     for (const p of j.pupils) {
       p.position.x = this.look.x * 0.035;
       p.position.y = -0.01 - this.look.y * 0.03;
     }
-    j.head.rotation.y = this.look.x * 0.12 + headTurn;
+    j.head.rotation.y = this.look.x * 0.12;
 
     // cejas
     j.brows.forEach((b, i) => {
       const side = i === 0 ? -1 : 1;
-      b.position.y = 0.175 + browLift;
-      b.rotation.z = Math.PI / 2 + side * (-0.12 + browTilt);
+      b.position.y = 0.175 + r.browLift;
+      b.rotation.z = Math.PI / 2 + side * (-0.12 + r.browTilt);
     });
 
     // boca
-    (Object.keys(j.mouths) as Array<keyof typeof j.mouths>).forEach((k2) => (j.mouths[k2].visible = k2 === mouth));
+    for (const k of Object.keys(j.mouths) as MouthShape[]) j.mouths[k].visible = k === r.mouth;
 
-    // parpadeo
-    if (t > this.nextBlink && this.blinkT < 0 && lidBase < 1) {
+    // parpadeo automático
+    if (t > this.nextBlink && this.blinkT < 0 && r.lid < 0.9) {
       this.blinkT = 0;
       this.nextBlink = t + 2.5 + Math.random() * 3;
     }
-    let lid = lidBase;
+    let lid = r.lid;
     if (this.blinkT >= 0) {
       this.blinkT += dt;
       const b = this.blinkT / 0.16;
@@ -323,7 +380,7 @@ export class JoseStage {
     }
 
     // brasa
-    const flick = 0.85 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23.7) * 0.05;
+    const flick = 0.85 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23.7) * 0.05 + r.flare;
     j.emberLight.intensity = 1.2 * flick;
     const em = j.ember.material as THREE.MeshStandardMaterial;
     if (em.emissive) em.emissiveIntensity = 2.2 * flick;
@@ -333,9 +390,8 @@ export class JoseStage {
   }
 
   dispose() {
-    cancelAnimationFrame(this.raf);
+    this.stop();
     this.ro?.disconnect();
-    window.removeEventListener('pointermove', this.onPointer);
     this.scene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.geometry) m.geometry.dispose();

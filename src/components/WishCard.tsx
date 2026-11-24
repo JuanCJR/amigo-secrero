@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { WishItem } from '../lib/api';
+import { Icon } from './Icon';
 
 const hue = (s: string) => {
   let h = 0;
@@ -48,7 +49,7 @@ export function WishCard({ item, onDelete, flipId, readOnly }: { item: Pick<Wish
               onDelete(e.currentTarget.closest('.wish') as HTMLElement);
             }}
           >
-            {confirm ? '¿Borrar?' : '🗑'}
+            {confirm ? '¿Borrar?' : <Icon name="trash" />}
           </button>
         )
       )}

@@ -12,6 +12,7 @@ import { api, clp, daysUntil, joseError, prettyDate, type PublicGroup } from '..
 import { isAuthError, useAdmin, useGroup, put } from '../lib/data';
 import { drawGuard, rememberGroup, tokens } from '../lib/storage';
 import { gsap, motion } from '../lib/gsap';
+import { Icon } from '../components/Icon';
 
 export const groupLink = (gid: string) => `${window.location.origin}/g/${gid}`;
 
@@ -158,8 +159,8 @@ function AdminPanel({ gid }: { gid: string }) {
       <div className="group-head" data-anim="drop">
         <h1 className="title">{g.title}</h1>
         <div className="chips">
-          <Chip>📅 {prettyDate(g.date)}</Chip>
-          <Chip tone="gold">💰 {clp(g.budget)}</Chip>
+          <Chip><Icon name="calendar" size={16} /> {prettyDate(g.date)}</Chip>
+          <Chip tone="gold"><Icon name="gift" size={16} /> Hasta {clp(g.budget)}</Chip>
           {days >= 0 && <Chip tone="green">{days === 0 ? '¡Es hoy!' : `Faltan ${days} días`}</Chip>}
         </div>
       </div>
@@ -188,7 +189,7 @@ function AdminPanel({ gid }: { gid: string }) {
             <Avatar seed={p.avatar} size={44} />
             <span className="person-name">{p.name}</span>
             <span className={`badge ${p.claimed ? 'badge-ok' : ''}`}>{p.claimed ? 'Entró' : 'Aún no'}</span>
-            <span className="badge">🎁 {data.wishCounts[p.id] || 0}</span>
+            <span className="badge" aria-label={`${data.wishCounts[p.id] || 0} deseos`}><Icon name="gift" size={14} /> {data.wishCounts[p.id] || 0}</span>
             {p.claimed && (
               <button
                 className="link-btn"
@@ -205,7 +206,7 @@ function AdminPanel({ gid }: { gid: string }) {
       </ul>
       {!g.drawn && (
         <Btn variant="ghost" anim="pop" onClick={() => navigate(`/g/${gid}/admin/editar`)}>
-          ✏️ Editar participantes
+          <Icon name="edit" /> Editar participantes
         </Btn>
       )}
       <button
@@ -216,7 +217,7 @@ function AdminPanel({ gid }: { gid: string }) {
           navigate('/');
         }}
       >
-        🔒 Cerrar el panel
+        <Icon name="lock" size={16} /> Cerrar el panel
       </button>
 
       <Dialog open={confirm} onClose={() => setConfirm(false)}>

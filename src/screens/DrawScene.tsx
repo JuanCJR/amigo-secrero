@@ -190,9 +190,9 @@ function DrawSceneInner({ gid }: { gid: string }) {
         );
         // 2. anticipación: José se agacha y se saca el gorro
         tl.call(() => ctrl.holdPose('raise', 0.3), [], 0.25);
-        tl.to(ctrl.p.root, { scaleY: 0.86, scaleX: 1.1, duration: 0.22, ease: 'power2.in' }, 0.25);
-        tl.to(ctrl.p.root, { scaleY: 1.08, scaleX: 0.94, duration: 0.18, ease: 'power2.out' }, 0.47);
-        tl.to(ctrl.p.root, { scaleY: 1, scaleX: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.65);
+        tl.to(ctrl.rig, { stretch: 0.86, duration: 0.22, ease: 'power2.in' }, 0.25);
+        tl.to(ctrl.rig, { stretch: 1.08, duration: 0.18, ease: 'power2.out' }, 0.47);
+        tl.to(ctrl.rig, { stretch: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.65);
         tl.call(() => {
           ctrl.setHat(false);
           ctrl.holdPose('overhead', 0.5);
@@ -237,7 +237,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
         }, [], mixAt);
         tl.to(hats, { rotation: 16, duration: 2.2, ease: 'shakeUp' }, mixAt);
         tl.to(hats, { x: `+=${8}`, duration: 2.2, ease: 'jitter' }, mixAt);
-        tl.to(ctrl.p.root, { rotation: 5, duration: 2.2, ease: 'shakeUp', svgOrigin: '100 244' }, mixAt);
+        tl.to(ctrl.rig, { lean: 0.09, duration: 2.2, ease: 'shakeUp' }, mixAt);
         const jumpers = papers.slice(0, Math.min(papers.length, 10));
         for (let k = 0; k < 14; k++) {
           const p = jumpers[k % jumpers.length];
@@ -254,13 +254,13 @@ function DrawSceneInner({ gid }: { gid: string }) {
         const pauseAt = mixAt + 2.25;
         const floaters = papers.slice(0, Math.min(5, papers.length));
         tl.to(hats, { rotation: 0, duration: 0.5, ease: 'elastic.out(1,0.3)' }, pauseAt);
-        tl.to(ctrl.p.root, { rotation: 0, duration: 0.4 }, pauseAt);
+        tl.to(ctrl.rig, { lean: 0, duration: 0.4 }, pauseAt);
         floaters.forEach((p, i) => {
           tl.set(p, { x: opening.x - 11 + (i - 2) * 26 * unit * 1.4, y: opening.y - 30, opacity: 0, scale: 0.5, rotation: gsap.utils.random(-30, 30), zIndex: 7 }, pauseAt);
           tl.to(p, { opacity: 1, scale: 1, y: `-=${30 + (i % 2) * 18}`, duration: 0.9, ease: 'sine.out' }, pauseAt + i * 0.05);
         });
         tl.to(q('.scene-inner'), { scale: 1.06, duration: 0.95, ease: 'sine.inOut' }, pauseAt);
-        tl.to(ctrl.p.glow, { scale: 2, duration: 0.2, yoyo: true, repeat: 3, ease: 'power2.inOut' }, pauseAt);
+        tl.to(ctrl.rig, { flare: 1, duration: 0.2, yoyo: true, repeat: 3, ease: 'power2.inOut' }, pauseAt);
         tl.call(() => ctrl.lookAt(opening.x + s.left, opening.y + s.top - 40, true), [], pauseAt);
 
         // 6. clímax: squash & stretch y salen los sobres

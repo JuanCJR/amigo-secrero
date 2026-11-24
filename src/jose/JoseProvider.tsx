@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { gsap, motion } from '../lib/gsap';
-import { Rig } from './Rig';
-import { JoseController, SMOKE_RATE, type Mood, type Reaction } from './controller';
+import { JoseController, SMOKE_RATE, CANVAS_MARGIN, type Mood, type Reaction } from '../jose3d/controller3d';
 
 export interface Say {
   text: string;
@@ -38,6 +37,14 @@ export const useJose = () => {
 
 const BASE_W = 120;
 const BASE_H = 150;
+// la caja del personaje equivale al viewBox 200×250 del rig original; el lienzo 3D sobresale
+const PX = BASE_W / 200;
+const CANVAS_STYLE = {
+  left: -CANVAS_MARGIN.left * PX,
+  top: -CANVAS_MARGIN.top * PX,
+  width: (200 + CANVAS_MARGIN.left + CANVAS_MARGIN.right) * PX,
+  height: (250 + CANVAS_MARGIN.top + CANVAS_MARGIN.bottom) * PX,
+};
 
 const QUIPS = [
   '¡Jaja, cosquillas no! Sigue con el botón grande de abajo.',
@@ -46,7 +53,7 @@ const QUIPS = [
 ];
 
 export function JoseProvider({ children }: { children: ReactNode }) {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const holderRef = useRef<HTMLDivElement>(null);
   const smokeRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<JoseController | null>(null);
@@ -124,6 +131,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
     lastRect.current = key;
     const scale = Math.min(r.width / BASE_W, r.height / BASE_H);
     scaleRef.current = scale;
+    ctrlRef.current?.setResolutionScale(scale);
     const x = r.left + (r.width - BASE_W * scale) / 2;
     const y = r.top + r.height - BASE_H * scale;
     if (first || instant || motion.reduced) gsap.set(holder, { x, y, scale });
@@ -144,7 +152,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
 
   // ---------- controlador ----------
   useLayoutEffect(() => {
-    const c = new JoseController(svgRef.current!);
+    const c = new JoseController(stageRef.current!);
     ctrlRef.current = c;
     if ((import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV) (window as unknown as { __jose: JoseController }).__jose = c;
     gsap.set(holderRef.current, { transformOrigin: '0 0' });
@@ -282,7 +290,7 @@ export function JoseProvider({ children }: { children: ReactNode }) {
       <div className="smoke-layer" ref={smokeRef} aria-hidden="true" />
       <div className="jm-layer" aria-hidden="true">
         <div className="jm-holder" ref={holderRef} onPointerDown={onTap} style={{ width: BASE_W, height: BASE_H }}>
-          <Rig ref={svgRef} uid="jm" />
+          <div className="jm-stage" ref={stageRef} style={CANVAS_STYLE} />
         </div>
       </div>
     </Ctx.Provider>

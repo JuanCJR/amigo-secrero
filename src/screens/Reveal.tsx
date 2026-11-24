@@ -168,8 +168,8 @@ export function Reveal({ gid }: { gid: string }) {
         });
         tl.set(g, { opacity: 1 })
           .from(g, { x: dx, y: dy, scale: 0.3, rotation: -25, duration: 0.01 })
-          .to(ctrl.p.root, { scaleY: 0.85, scaleX: 1.1, duration: 0.2, ease: 'power2.in' }, 0.15)
-          .to(ctrl.p.root, { scaleY: 1, scaleX: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.35)
+          .to(ctrl.rig, { stretch: 0.85, duration: 0.2, ease: 'power2.in' }, 0.15)
+          .to(ctrl.rig, { stretch: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.35)
           .to(
             g,
             {

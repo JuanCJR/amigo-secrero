@@ -51,7 +51,7 @@ export const Btn = forwardRef<HTMLButtonElement, Props>(function Btn(
           return;
         }
         const r = local.current!.getBoundingClientRect();
-        sparkle(e.clientX || r.left + r.width / 2, e.clientY || r.top + r.height / 2, 7, variant === 'primary' ? '#FFC15E' : '#FFF3DD');
+        sparkle(e.clientX || r.left + r.width / 2, e.clientY || r.top + r.height / 2, 7, variant === 'primary' ? '#FFD447' : '#F5EFE2');
         onClick?.(e);
       }}
       {...rest}
