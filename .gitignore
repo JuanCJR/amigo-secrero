@@ -1,0 +1,5 @@
+node_modules
+dist
+data.json
+.wrangler
+server/assets.gen.ts

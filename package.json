@@ -1,0 +1,45 @@
+{
+  "name": "amigo-secreto",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"tsx watch server/node.ts\" \"vite\"",
+    "build": "tsc && vite build",
+    "start": "SERVE_STATIC=1 tsx server/node.ts",
+    "deploy": "vite build && node scripts/embed-assets.mjs && wrangler deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JuanCJR/amigo-secrero.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JuanCJR/amigo-secrero/issues"
+  },
+  "homepage": "https://github.com/JuanCJR/amigo-secrero#readme",
+  "dependencies": {
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/bagel-fat-one": "^5.3.0",
+    "@gsap/react": "^2.1.2",
+    "@hono/node-server": "^2.1.11",
+    "gsap": "3.13",
+    "hono": "^4.13.19",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^10.0.7",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^5.4.21",
+    "wrangler": "^4.166.0"
+  },
+  "private": true,
+  "type": "module"
+}
