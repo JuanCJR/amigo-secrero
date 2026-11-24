@@ -23,19 +23,19 @@ function HatBack() {
 function HatFront() {
   return (
     <svg viewBox="0 0 140 150" className="hat hat-front" aria-hidden="true" overflow="visible">
-      <path d="M14,34 C20,84 48,118 70,136 C92,118 120,84 126,34 C106,50 34,50 14,34 Z" fill="#E8443A" stroke="#3B2A2A" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M34,60 C44,92 58,110 70,122" stroke="#FF7A6E" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.6" />
-      <path d="M8,30 C30,52 110,52 132,30 L132,40 C110,64 30,64 8,40 Z" fill="#FFF8EE" stroke="#3B2A2A" strokeWidth="3" strokeLinejoin="round" />
-      <circle cx="70" cy="140" r="11" fill="#FFF8EE" stroke="#3B2A2A" strokeWidth="3" />
+      <path d="M14,34 C20,84 48,118 70,136 C92,118 120,84 126,34 C106,50 34,50 14,34 Z" fill="#FF5B3A" stroke="#111111" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M34,60 C44,92 58,110 70,122" stroke="#FF8A6E" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.6" />
+      <path d="M8,30 C30,52 110,52 132,30 L132,40 C110,64 30,64 8,40 Z" fill="#F5EFE2" stroke="#111111" strokeWidth="3" strokeLinejoin="round" />
+      <circle cx="70" cy="140" r="11" fill="#F5EFE2" stroke="#111111" strokeWidth="3" />
     </svg>
   );
 }
 function Envelope() {
   return (
     <svg viewBox="0 0 40 28" aria-hidden="true">
-      <rect x="1.5" y="1.5" width="37" height="25" rx="3" fill="#FFF3DD" stroke="#3B2A2A" strokeWidth="2" />
-      <path d="M2,3 L20,16 L38,3" stroke="#3B2A2A" strokeWidth="2" fill="none" strokeLinejoin="round" />
-      <circle className="seal" cx="20" cy="16" r="5" fill="#E8443A" stroke="#3B2A2A" strokeWidth="1.5" />
+      <rect x="1.5" y="1.5" width="37" height="25" rx="3" fill="#F5EFE2" stroke="#111111" strokeWidth="2" />
+      <path d="M2,3 L20,16 L38,3" stroke="#111111" strokeWidth="2" fill="none" strokeLinejoin="round" />
+      <circle className="seal" cx="20" cy="16" r="5" fill="#FF5B3A" stroke="#111111" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -140,10 +140,8 @@ function DrawSceneInner({ gid }: { gid: string }) {
         return;
       }
 
-      // esperar a que José llegue a su lugar en la escena
-      gsap.delayedCall(0.85, () => {
-        const ctrl = jose.ctrl();
-        if (!ctrl) return;
+      // esperar a que José (3D, carga aparte) exista y llegue a su lugar en la escena
+      jose.ready().then((ctrl) => gsap.delayedCall(0.85, () => {
         const s = root.getBoundingClientRect();
         const toLocal = (p: { x: number; y: number }) => ({ x: p.x - s.left, y: p.y - s.top });
         const W = s.width;
@@ -190,9 +188,9 @@ function DrawSceneInner({ gid }: { gid: string }) {
         );
         // 2. anticipación: José se agacha y se saca el gorro
         tl.call(() => ctrl.holdPose('raise', 0.3), [], 0.25);
-        tl.to(ctrl.p.root, { scaleY: 0.86, scaleX: 1.1, duration: 0.22, ease: 'power2.in' }, 0.25);
-        tl.to(ctrl.p.root, { scaleY: 1.08, scaleX: 0.94, duration: 0.18, ease: 'power2.out' }, 0.47);
-        tl.to(ctrl.p.root, { scaleY: 1, scaleX: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.65);
+        tl.to(ctrl.rig, { stretch: 0.86, duration: 0.22, ease: 'power2.in' }, 0.25);
+        tl.to(ctrl.rig, { stretch: 1.08, duration: 0.18, ease: 'power2.out' }, 0.47);
+        tl.to(ctrl.rig, { stretch: 1, duration: 0.5, ease: 'elastic.out(1,0.4)' }, 0.65);
         tl.call(() => {
           ctrl.setHat(false);
           ctrl.holdPose('overhead', 0.5);
@@ -237,7 +235,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
         }, [], mixAt);
         tl.to(hats, { rotation: 16, duration: 2.2, ease: 'shakeUp' }, mixAt);
         tl.to(hats, { x: `+=${8}`, duration: 2.2, ease: 'jitter' }, mixAt);
-        tl.to(ctrl.p.root, { rotation: 5, duration: 2.2, ease: 'shakeUp', svgOrigin: '100 244' }, mixAt);
+        tl.to(ctrl.rig, { lean: 0.09, duration: 2.2, ease: 'shakeUp' }, mixAt);
         const jumpers = papers.slice(0, Math.min(papers.length, 10));
         for (let k = 0; k < 14; k++) {
           const p = jumpers[k % jumpers.length];
@@ -254,13 +252,13 @@ function DrawSceneInner({ gid }: { gid: string }) {
         const pauseAt = mixAt + 2.25;
         const floaters = papers.slice(0, Math.min(5, papers.length));
         tl.to(hats, { rotation: 0, duration: 0.5, ease: 'elastic.out(1,0.3)' }, pauseAt);
-        tl.to(ctrl.p.root, { rotation: 0, duration: 0.4 }, pauseAt);
+        tl.to(ctrl.rig, { lean: 0, duration: 0.4 }, pauseAt);
         floaters.forEach((p, i) => {
           tl.set(p, { x: opening.x - 11 + (i - 2) * 26 * unit * 1.4, y: opening.y - 30, opacity: 0, scale: 0.5, rotation: gsap.utils.random(-30, 30), zIndex: 7 }, pauseAt);
           tl.to(p, { opacity: 1, scale: 1, y: `-=${30 + (i % 2) * 18}`, duration: 0.9, ease: 'sine.out' }, pauseAt + i * 0.05);
         });
         tl.to(q('.scene-inner'), { scale: 1.06, duration: 0.95, ease: 'sine.inOut' }, pauseAt);
-        tl.to(ctrl.p.glow, { scale: 2, duration: 0.2, yoyo: true, repeat: 3, ease: 'power2.inOut' }, pauseAt);
+        tl.to(ctrl.rig, { flare: 1, duration: 0.2, yoyo: true, repeat: 3, ease: 'power2.inOut' }, pauseAt);
         tl.call(() => ctrl.lookAt(opening.x + s.left, opening.y + s.top - 40, true), [], pauseAt);
 
         // 6. clímax: squash & stretch y salen los sobres
@@ -315,7 +313,7 @@ function DrawSceneInner({ gid }: { gid: string }) {
           [],
           closeAt + 0.7,
         );
-      });
+      }));
     },
     { scope: scene, dependencies: [people.length] },
   );

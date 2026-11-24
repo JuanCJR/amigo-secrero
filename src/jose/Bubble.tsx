@@ -4,8 +4,9 @@ import { useJose } from './JoseProvider';
 
 const CLOUD =
   'M24,62 C2,62 2,30 26,30 C26,8 62,2 76,20 C88,2 128,2 134,22 C152,6 194,16 186,44 C202,54 196,90 172,84 C164,100 120,100 110,88 C96,102 52,100 48,86 C26,96 4,80 24,62 Z';
+// papelito: rectángulo de esquinas casi rectas (mismo número de curvas para que el morph sea suave)
 const SPEECH =
-  'M16,4 L184,4 C192,4 196,8 196,16 L196,84 C196,92 192,96 184,96 L16,96 C8,96 4,92 4,84 L4,16 C4,8 8,4 16,4 Z';
+  'M6,4 L194,4 C195,4 196,5 196,6 L196,94 C196,95 195,96 194,96 L6,96 C5,96 4,95 4,94 L4,6 C4,5 5,4 6,4 Z';
 
 export function Bubble() {
   const { msg, smokeBurst, setTyping, setMood, ctrl, puff } = useJose();

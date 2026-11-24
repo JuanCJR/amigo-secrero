@@ -1,15 +1,22 @@
 /* Solo el subconjunto latino (español): mantiene el paquete liviano */
 @font-face {
-  font-family: 'Figtree Variable';
+  font-family: 'Inter Variable';
   font-style: normal;
   font-display: swap;
-  font-weight: 300 900;
-  src: url('./figtree-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  src: url('./inter-latin-wght-normal.woff2') format('woff2-variations');
 }
 @font-face {
-  font-family: 'Bagel Fat One';
+  font-family: 'Big Shoulders Display';
   font-style: normal;
   font-display: swap;
-  font-weight: 400;
-  src: url('./bagel-fat-one-latin-400-normal.woff2') format('woff2');
+  font-weight: 800;
+  src: url('./big-shoulders-display-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Big Shoulders Display';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url('./big-shoulders-display-latin-900-normal.woff2') format('woff2');
 }

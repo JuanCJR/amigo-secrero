@@ -22,4 +22,16 @@ npm run dev      # API en :8787 + Vite en :5173
 
 ## Stack
 
-Vite + React + TypeScript, GSAP 3.13 (Flip, MorphSVG, DrawSVG, MotionPath, Physics2D, SplitText, ScrambleText, CustomEase/Wiggle/Bounce) y una API pequeña con Hono.
+Vite + React + TypeScript, three.js (José Miguel en 3D), GSAP 3.13 (Flip, MorphSVG, DrawSVG, MotionPath, Physics2D, SplitText, ScrambleText, CustomEase/Wiggle/Bounce) y una API pequeña con Hono.
+
+## José Miguel 3D
+
+José es un modelo procedural en three.js que se dibuja sobre la interfaz. `src/jose3d/controller3d.ts` le da ánimos, reacciones y poses con la misma interfaz que tenía el rig SVG. Tiene dos looks: `pixar` (por defecto: materiales físicos, luz de estudio, sombras suaves) y `toon` (plano con contorno; `?look=toon` en la vista previa). Está en `src/jose3d/` (`model.ts` arma las piezas y `stage.ts` maneja el render y los ánimos). Para verlo con `npm run dev`, abre `http://localhost:5173/jose3d.html`. Acepta estos parámetros:
+
+- `?mood=wave|celebrate|worried|thinking|sleep|idle`
+- `&yaw=0.7` para girarlo
+- `&t=0.5&clear=1` para un cuadro fijo con fondo transparente
+
+## Diseño
+
+Tema "Rifa": fondo verde pino, papelitos crema y amarillos y botón tomate. La tipografía es Big Shoulders Display para títulos e Inter para el texto, y las fuentes están incluidas en `src/fonts/`. Los iconos son de línea (`src/components/Icon.tsx`), sin emoji.

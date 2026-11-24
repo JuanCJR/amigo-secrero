@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import { gsap, motion } from '../lib/gsap';
 import { useRouter } from '../lib/router';
 import { Bubble } from '../jose/Bubble';
-import { JoseSlot } from '../jose/JoseProvider';
+import { JoseSlot, useJose } from '../jose/JoseProvider';
+import { seen } from '../lib/storage';
 
 interface Meta {
   back?: string | null;
@@ -10,12 +11,27 @@ interface Meta {
   step?: number;
   steps?: number;
   hero?: boolean;
+  /**
+   * José explica esta pantalla solo la primera vez (clave para recordarlo).
+   * Después la pantalla queda limpia y él aparece únicamente para avisos o celebraciones.
+   */
+  joseOnce?: string;
+  /** Silencio explícito (gana sobre joseOnce), p. ej. después de terminar un recorrido guiado. */
+  joseQuiet?: boolean;
 }
 const MetaCtx = createContext<(m: Meta) => void>(() => {});
 
 /** Cada pantalla declara a dónde vuelve y en qué paso va. */
 export function useScreenMeta(m: Meta) {
   const set = useContext(MetaCtx);
+  const { setQuiet } = useJose();
+  const once = m.joseOnce;
+  const forced = m.joseQuiet;
+  // antes que los useEffect de la pantalla (donde José dice su bienvenida)
+  useLayoutEffect(() => {
+    setQuiet(forced ?? (!!once && seen.has(`jose:${once}`)));
+    if (once && forced === undefined) seen.mark(`jose:${once}`);
+  }, [once, forced, setQuiet]);
   const key = JSON.stringify(m);
   useLayoutEffect(() => set(m), [key]); // eslint-disable-line react-hooks/exhaustive-deps
 }
@@ -49,6 +65,7 @@ function Stepper({ step, steps }: { step: number; steps: number }) {
 export function Shell({ children }: { children: ReactNode }) {
   const [meta, setMeta] = useState<Meta>({});
   const { navigate } = useRouter();
+  const { present, quiet } = useJose();
   const backRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -57,7 +74,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <MetaCtx.Provider value={setMeta}>
-      <div className={`app ${meta.hero ? 'is-hero' : ''}`}>
+      <div className={`app ${meta.hero ? 'is-hero' : ''} ${quiet ? 'is-quiet' : ''} ${present ? 'jose-present' : ''}`}>
         <header className="topbar">
           {meta.back ? (
             <button ref={backRef} className="back-btn" onClick={() => navigate(meta.back!)} aria-label={meta.backLabel || 'Volver atrás'}>

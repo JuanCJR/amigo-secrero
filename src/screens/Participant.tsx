@@ -10,6 +10,7 @@ import { api, clp, daysUntil, joseError, prettyDate } from '../lib/api';
 import { isAuthError, put, useGroup, useMe } from '../lib/data';
 import { forgetGroup, rememberGroup, seen, tokens } from '../lib/storage';
 import { confetti } from '../components/confetti';
+import { Icon } from '../components/Icon';
 
 export function Join({ gid }: { gid: string }) {
   useScreenMeta({ back: null, step: 1, steps: 4 });
@@ -41,8 +42,8 @@ export function Join({ gid }: { gid: string }) {
       <div className="group-head" data-anim="drop">
         <h1 className="title">{g.title}</h1>
         <div className="chips">
-          <Chip>📅 {prettyDate(g.date)}</Chip>
-          <Chip tone="gold">💰 {clp(g.budget)}</Chip>
+          <Chip><Icon name="calendar" size={16} /> {prettyDate(g.date)}</Chip>
+          <Chip tone="gold"><Icon name="gift" size={16} /> Hasta {clp(g.budget)}</Chip>
         </div>
       </div>
       <div className="group-label" data-anim="pop">
@@ -57,9 +58,7 @@ export function Join({ gid }: { gid: string }) {
               </span>
               <span className="face-name">{p.name}</span>
               {p.claimed && (
-                <span className="face-lock" aria-label="ya tiene PIN">
-                  🔒
-                </span>
+                <span className="face-lock">Ya entró</span>
               )}
             </button>
           </li>
@@ -165,7 +164,8 @@ export function Home({ gid }: { gid: string }) {
   const drawn = !!data?.group.drawn;
   const wishes = data?.wishlist.length ?? 0;
   const step = !wishes ? 2 : drawn && !revealed ? 3 : revealed ? 4 : 2;
-  useScreenMeta({ back: null, step, steps: 4 });
+  // José guía el recorrido la primera vez; después el inicio queda limpio (mientras carga, también)
+  useScreenMeta({ back: null, step, steps: 4, joseQuiet: pid ? seen.has(`tour:${gid}:${pid}`) && tour === null : true });
   const wasDrawn = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -236,9 +236,9 @@ export function Home({ gid }: { gid: string }) {
   const n = next();
   const days = daysUntil(g.date);
   const cards = [
-    { id: 'card-list', icon: '📝', title: 'Mi lista de deseos', sub: wishes ? `${wishes} ${wishes === 1 ? 'idea' : 'ideas'} de regalo` : 'Todavía vacía', to: `/g/${gid}/mi-lista`, locked: false, done: wishes > 0 },
-    { id: 'card-reveal', icon: '🎁', title: 'Descubrir a mi amigo', sub: drawn ? (revealed ? 'Ya lo descubriste' : '¡Listo para abrir!') : 'Esperando el sorteo', to: `/g/${gid}/descubrir`, locked: !drawn, done: revealed },
-    { id: 'card-their', icon: '🎯', title: 'Ver qué le gustaría', sub: revealed ? 'Su lista de deseos' : 'Después de descubrirlo', to: `/g/${gid}/su-lista`, locked: !revealed, done: false },
+    { id: 'card-list', icon: 'list' as const, title: 'Mi lista de deseos', sub: wishes ? `${wishes} ${wishes === 1 ? 'idea' : 'ideas'} de regalo` : 'Todavía vacía', to: `/g/${gid}/mi-lista`, locked: false, done: wishes > 0 },
+    { id: 'card-reveal', icon: 'gift' as const, title: 'Descubrir a mi amigo', sub: drawn ? (revealed ? 'Ya lo descubriste' : '¡Listo para abrir!') : 'Esperando el sorteo', to: `/g/${gid}/descubrir`, locked: !drawn, done: revealed },
+    { id: 'card-their', icon: 'target' as const, title: 'Ver qué le gustaría', sub: revealed ? 'Su lista de deseos' : 'Después de descubrirlo', to: `/g/${gid}/su-lista`, locked: !revealed, done: false },
   ];
 
   return (
@@ -266,8 +266,8 @@ export function Home({ gid }: { gid: string }) {
         <div>
           <h1 className="title">Hola, {me.name}</h1>
           <div className="chips">
-            <Chip>{days > 0 ? `📅 Faltan ${days} días` : days === 0 ? '📅 ¡Es hoy!' : '📅 Ya pasó'}</Chip>
-            <Chip tone="gold">💰 {clp(g.budget)}</Chip>
+            <Chip><Icon name="calendar" size={16} /> {days > 0 ? `Faltan ${days} días` : days === 0 ? '¡Es hoy!' : 'Ya pasó'}</Chip>
+            <Chip tone="gold"><Icon name="gift" size={16} /> Hasta {clp(g.budget)}</Chip>
           </div>
         </div>
       </div>
@@ -287,9 +287,9 @@ export function Home({ gid }: { gid: string }) {
                 else navigate(c.to);
               }}
             >
-              <span className="step-num">{c.done ? '✓' : i + 1}</span>
+              <span className="step-num">{c.done ? <Icon name="check" size={18} label="Listo" /> : String(i + 1).padStart(2, '0')}</span>
               <span className="step-icon" aria-hidden="true">
-                {c.locked ? '🔒' : c.icon}
+                <Icon name={c.locked ? 'lock' : c.icon} size={26} />
               </span>
               <span className="step-text">
                 <strong>{c.title}</strong>

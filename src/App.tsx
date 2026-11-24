@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Router, match, useRouter } from './lib/router';
 import { JoseProvider, useJose } from './jose/JoseProvider';
 import { Shell, useScreenMeta } from './components/Shell';
-import { Background } from './components/Background';
 import { Screen } from './components/Screen';
 import { Btn } from './components/Btn';
 import { Welcome } from './screens/Welcome';
@@ -42,7 +41,6 @@ function route(path: string) {
 export function App() {
   return (
     <JoseProvider>
-      <Background />
       <Router>
         {(path) => (
           <Shell>
