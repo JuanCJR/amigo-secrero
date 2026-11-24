@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { gsap, motion, SplitText } from '../lib/gsap';
 import { useJose } from './JoseProvider';
+import { speak, stop as stopVoice } from './voice';
 
 const CLOUD =
   'M24,62 C2,62 2,30 26,30 C26,8 62,2 76,20 C88,2 128,2 134,22 C152,6 194,16 186,44 C202,54 196,90 172,84 C164,100 120,100 110,88 C96,102 52,100 48,86 C26,96 4,80 24,62 Z';
@@ -64,12 +65,28 @@ export function Bubble() {
         .to(shape.current, { morphSVG: SPEECH, duration: 0.5, ease: 'back.out(2)' }, 0.14);
     }
 
-    // máquina de escribir
+    // voz: la boca sigue moviéndose mientras José habla, aunque el texto ya esté escrito
     const text = msg.text;
     const t = textEl.current;
+    let typingDone = false;
+    let speechDone = true;
+    const settle = () => {
+      if (typingDone && speechDone) setTyping(false);
+    };
+    speechDone = !speak(text, () => {
+      speechDone = true;
+      settle();
+    });
+    if (!speechDone) setTyping(true);
+
+    // máquina de escribir
     if (R) {
       t.textContent = text;
-      return;
+      typingDone = true;
+      return () => {
+        stopVoice();
+        setTyping(false);
+      };
     }
     // el mensaje anterior se disuelve en humo mientras el nuevo empieza a escribirse
     const prev = t.textContent || '';
@@ -110,9 +127,13 @@ export function Bubble() {
       onUpdate: () => {
         t.textContent = text.slice(0, Math.round(o.n));
       },
-      onComplete: () => setTyping(false),
+      onComplete: () => {
+        typingDone = true;
+        settle();
+      },
     });
     return () => {
+      stopVoice();
       setTyping(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
