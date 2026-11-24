@@ -177,20 +177,25 @@ export function MyList({ gid }: { gid: string }) {
   return (
     <Screen
       cta={
-        <Btn
-          busy={busy}
-          blocked={!url}
-          onBlocked={() =>
-            say({
-              text: raw ? 'Esa weá no es un link. En la tienda toca Compartir, después Copiar link, y lo pegai en el cuadro.' : 'Primero pega un link en el cuadro de arriba po. Toca Pegar o mantén apretao el cuadro.',
-              mood: 'worried',
-              point: '#wish-url',
-            })
-          }
-          onClick={add}
-        >
-          Agregar a mi lista
-        </Btn>
+        <>
+          <Btn
+            busy={busy}
+            blocked={!url}
+            onBlocked={() =>
+              say({
+                text: raw ? 'Esa weá no es un link. En la tienda toca Compartir, después Copiar link, y lo pegai en el cuadro.' : 'Primero pega un link en el cuadro de arriba po. Toca Pegar o mantén apretao el cuadro.',
+                mood: 'worried',
+                point: '#wish-url',
+              })
+            }
+            onClick={add}
+          >
+            Agregar a mi lista
+          </Btn>
+          <Btn variant="soft" onClick={() => navigate(`/g/${gid}/inicio`)}>
+            Volver al inicio
+          </Btn>
+        </>
       }
     >
       <div className="screen-head" data-flip-id="card-list">
