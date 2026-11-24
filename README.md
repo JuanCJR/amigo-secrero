@@ -26,7 +26,7 @@ Vite + React + TypeScript, GSAP 3.13 (Flip, MorphSVG, DrawSVG, MotionPath, Physi
 
 ## José Miguel 3D (en desarrollo)
 
-Modelo procedural en three.js, en `src/jose3d/` (`model.ts` arma las piezas y `stage.ts` maneja el render y los ánimos). Para verlo con `npm run dev`, abre `http://localhost:5173/jose3d.html`. Acepta estos parámetros:
+Modelo procedural en three.js con dos looks: `pixar` (por defecto: materiales físicos, luz de estudio, sombras suaves) y `toon` (plano con contorno; `?look=toon` en la vista previa). Está en `src/jose3d/` (`model.ts` arma las piezas y `stage.ts` maneja el render y los ánimos). Para verlo con `npm run dev`, abre `http://localhost:5173/jose3d.html`. Acepta estos parámetros:
 
 - `?mood=wave|celebrate|worried|thinking|sleep|idle`
 - `&yaw=0.7` para girarlo

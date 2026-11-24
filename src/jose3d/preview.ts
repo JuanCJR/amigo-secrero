@@ -7,6 +7,7 @@ if (clear) document.body.classList.add('clear');
 if (clear) document.documentElement.style.background = 'transparent';
 const stage = new JoseStage(document.getElementById('stage')!, {
   transparent: clear,
+  look: q.get('look') === 'toon' ? 'toon' : 'pixar',
   capture: q.has('t'),
   yaw: Number(q.get('yaw') || 0),
   followPointer: !q.has('t'),

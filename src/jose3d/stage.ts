@@ -1,11 +1,14 @@
 // Escenario 3D de José Miguel: render, luces, cámara y animación por "ánimo".
 // No depende de React; JoseCanvas.tsx lo envuelve.
 import * as THREE from 'three';
-import { buildJose, type JoseParts } from './model';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { buildJose, type JoseParts, type Look } from './model';
 
 export type Mood3D = 'idle' | 'wave' | 'celebrate' | 'worried' | 'thinking' | 'sleep';
 
 export interface StageOptions {
+  /** 'pixar' (por defecto): luz de estudio y sombras suaves. 'toon': plano con contorno. */
+  look?: Look;
   /** Fondo transparente (para ponerlo sobre la UI). */
   transparent?: boolean;
   background?: string;
@@ -17,6 +20,19 @@ export interface StageOptions {
   capture?: boolean;
   /** Sigue el puntero con la mirada. */
   followPointer?: boolean;
+}
+
+function softShadow() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 64;
+  const c = cv.getContext('2d')!;
+  const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, '#FFFFFF');
+  g.addColorStop(0.5, '#888888');
+  g.addColorStop(1, '#000000');
+  c.fillStyle = g;
+  c.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(cv);
 }
 
 const HAT_TILT = 0.42;
@@ -45,6 +61,7 @@ export class JoseStage {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     if (!opts.transparent) this.scene.background = new THREE.Color(opts.background || '#0F4A37');
+    const look = opts.look ?? 'pixar';
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = 'block';
 
@@ -52,22 +69,67 @@ export class JoseStage {
     this.camera.position.set(0, 2.6, 8.2);
     this.camera.lookAt(0, 1.3, 0);
 
-    // luz: una principal dura (define el corte toon) + relleno suave + contraluz cálido
-    this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 1.5));
-    const key = new THREE.DirectionalLight('#FFFFFF', 2.6);
-    key.position.set(2.5, 4, 4);
-    this.scene.add(key);
-    const rim = new THREE.DirectionalLight('#FFF1C2', 0.8);
-    rim.position.set(-3, 2, -3);
-    this.scene.add(rim);
+    if (look === 'pixar') {
+      // look "de película": tone mapping filmico, reflejos de un estudio, sombras suaves
+      this.renderer.toneMapping = THREE.NeutralToneMapping; // conserva los colores de la paleta
+      this.renderer.toneMappingExposure = 1.0;
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      this.scene.environmentIntensity = 0.4;
+      pmrem.dispose();
 
-    this.jose = buildJose();
+      const key = new THREE.DirectionalLight('#FFE9D2', 2.4); // principal cálida
+      key.position.set(0.9, 7, 4.5);
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      key.shadow.radius = 12;
+      key.shadow.blurSamples = 16;
+      key.shadow.bias = -0.0004;
+      key.shadow.normalBias = 0.02;
+      const sc = key.shadow.camera as THREE.OrthographicCamera;
+      sc.left = -2; sc.right = 2; sc.top = 3.5; sc.bottom = -0.5; sc.near = 0.5; sc.far = 12;
+      this.scene.add(key);
+      const fill = new THREE.DirectionalLight('#CFE2FF', 0.7); // relleno frío
+      fill.position.set(-3.5, 2, 3);
+      this.scene.add(fill);
+      const rim = new THREE.DirectionalLight('#FFD39A', 2.2); // contraluz que separa del fondo
+      rim.position.set(-2, 3, -4);
+      this.scene.add(rim);
+      this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 0.35));
+    } else {
+      // luz: una principal dura (define el corte toon) + relleno suave + contraluz cálido
+      this.scene.add(new THREE.HemisphereLight('#FFFFFF', '#3A5A50', 1.5));
+      const key = new THREE.DirectionalLight('#FFFFFF', 2.6);
+      key.position.set(2.5, 4, 4);
+      this.scene.add(key);
+      const rim = new THREE.DirectionalLight('#FFF1C2', 0.8);
+      rim.position.set(-3, 2, -3);
+      this.scene.add(rim);
+    }
+
+    this.jose = buildJose(look);
     this.scene.add(this.jose.root);
+    if (look === 'pixar') {
+      this.jose.root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && !(m.material as THREE.Material).transparent) {
+          m.castShadow = true;
+          m.receiveShadow = true;
+        }
+      });
+      // piso invisible que solo recibe la sombra (sirve también con fondo transparente)
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.ShadowMaterial({ opacity: 0.2 }));
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      this.scene.add(floor);
+    }
 
     // sombra de contacto
     const shadow = new THREE.Mesh(
       new THREE.CircleGeometry(0.55, 40),
-      new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.22, depthWrite: false }),
+      new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: look === 'pixar' ? 0.35 : 0.22, depthWrite: false, alphaMap: look === 'pixar' ? softShadow() : null }),
     );
     shadow.rotation.x = -Math.PI / 2;
     shadow.scale.y = 0.6;
@@ -263,7 +325,9 @@ export class JoseStage {
     // brasa
     const flick = 0.85 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23.7) * 0.05;
     j.emberLight.intensity = 1.2 * flick;
-    (j.ember.material as THREE.MeshBasicMaterial).color.setStyle('#FF5B3A').multiplyScalar(0.9 + flick * 0.15);
+    const em = j.ember.material as THREE.MeshStandardMaterial;
+    if (em.emissive) em.emissiveIntensity = 2.2 * flick;
+    else em.color.setStyle('#FF5B3A').multiplyScalar(0.9 + flick * 0.15);
 
     if (draw) this.renderer.render(this.scene, this.camera);
   }
