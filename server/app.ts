@@ -41,6 +41,8 @@ interface Session {
 }
 
 const SESSION_TTL = 60 * 60 * 24 * 200;
+/** El panel del organizador nunca queda abierto mucho tiempo. */
+const ADMIN_SESSION_TTL = 60 * 60 * 2;
 const MAX_FAILS = 5;
 const LOCK_SECONDS = 600;
 
@@ -222,7 +224,7 @@ export function createApp(store: Store, secret: string) {
   };
   const newSession = async (s: Session) => {
     const token = randomId(24);
-    await store.put(`session:${token}`, JSON.stringify(s), { ttl: SESSION_TTL });
+    await store.put(`session:${token}`, JSON.stringify(s), { ttl: s.role === 'admin' ? ADMIN_SESSION_TTL : SESSION_TTL });
     return token;
   };
   const getWishes = async (gid: string, pid: string) =>
