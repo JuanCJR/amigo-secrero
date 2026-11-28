@@ -184,7 +184,13 @@ export function Home({ gid }: { gid: string }) {
   useEffect(() => {
     if (drawn) return;
     const iv = window.setInterval(reload, 15000);
-    return () => window.clearInterval(iv);
+    // al volver a la app (desbloquear el celular, cambiar de pestaña) revisar al tiro
+    const onVisible = () => document.visibilityState === 'visible' && reload();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [drawn, reload]);
 
   const next = () => {

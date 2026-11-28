@@ -63,7 +63,7 @@ function publicGroup(g: Group) {
     title: g.title,
     date: g.date,
     budget: g.budget,
-    drawn: g.drawn,
+    drawn: !!g.drawn,
     participants: g.participants.map((p) => ({ id: p.id, name: p.name, avatar: p.avatar, claimed: !!p.pinHash })),
   };
 }

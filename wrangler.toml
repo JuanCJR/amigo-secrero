@@ -7,3 +7,13 @@ binding = "DATA"
 id = "4e95d4275ada4efa95c3234727a920a9"
 
 # El secreto se configura con: npx wrangler secret put APP_SECRET
+
+# La API corre en un Durable Object (consistente al instante; KV tardaba en
+# mostrar el sorteo). KV queda como respaldo de lectura para los datos antiguos.
+[[durable_objects.bindings]]
+name = "API"
+class_name = "Api"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Api"]
